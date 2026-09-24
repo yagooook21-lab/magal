@@ -397,24 +397,137 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
             });
 
             const btn = $(`.frete-btn[data-valor="${valor}"]`).first(); // Or match by class
+        const lojasMock = {
+            'SP': {
+                'São Paulo': [
+                    { nome: 'Magazine Luiza - Paulista', end: 'Av. Paulista, 1000', tempo: '2 horas' },
+                    { nome: 'Magazine Luiza - Interlagos', end: 'Av. Interlagos, 2255', tempo: '2 horas' },
+                    { nome: 'Magazine Luiza - Tatuapé', end: 'Rua Tuiuti, 2000', tempo: '4 horas' }
+                ],
+                'Campinas': [
+                    { nome: 'Magazine Luiza - Centro', end: 'R. Barão de Jaguara, 1000', tempo: '1 dia' }
+                ],
+                'default': 'São Paulo'
+            },
+            'RJ': {
+                'Rio de Janeiro': [
+                    { nome: 'Magazine Luiza - Copacabana', end: 'Av. N. Sra. de Copacabana, 500', tempo: '2 horas' },
+                    { nome: 'Magazine Luiza - Barra', end: 'Av. das Américas, 4666', tempo: '1 dia' }
+                ],
+                'default': 'Rio de Janeiro'
+            },
+            'MG': {
+                'Belo Horizonte': [
+                    { nome: 'Magazine Luiza - Centro', end: 'Av. Afonso Pena, 1000', tempo: '2 horas' },
+                    { nome: 'Magazine Luiza - Savassi', end: 'Av. do Contorno, 6000', tempo: '4 horas' }
+                ],
+                'default': 'Belo Horizonte'
+            },
+            'MS': {
+                'Campo Grande': [
+                    { nome: 'Magazine Luiza - Centro', end: 'R. 14 de Julho, 2100', tempo: '2 horas' },
+                    { nome: 'Magazine Luiza - Norte Sul', end: 'Av. Pres. Ernesto Geisel, 2300', tempo: '4 horas' }
+                ],
+                'Dourados': [
+                    { nome: 'Magazine Luiza - Centro', end: 'Av. Marcelino Pires, 1500', tempo: '2 horas' }
+                ],
+                'default': 'Campo Grande'
+            },
+            'RS': {
+                'Porto Alegre': [
+                    { nome: 'Magazine Luiza - Centro Histórico', end: 'Rua dos Andradas, 1234', tempo: '2 horas' }
+                ],
+                'default': 'Porto Alegre'
+            },
+            'PR': {
+                'Curitiba': [
+                    { nome: 'Magazine Luiza - Centro', end: 'Rua XV de Novembro, 500', tempo: '2 horas' },
+                    { nome: 'Magazine Luiza - Palladium', end: 'Av. Pres. Kennedy, 4121', tempo: '4 horas' }
+                ],
+                'default': 'Curitiba'
+            },
+            'BA': {
+                'Salvador': [
+                    { nome: 'Magazine Luiza - Iguatemi', end: 'Av. Tancredo Neves, 148', tempo: '2 horas' }
+                ],
+                'default': 'Salvador'
+            }
+        };
+
+        function getLojas(cidade, uf) {
+            let estadoData = lojasMock[uf];
+            let mensagem = "";
+            let lojasLista = [];
+            let cidadeExibicao = cidade;
+            
+            // Se o estado não está no mock, criamos um mock genérico para a Capital do estado
+            if (!estadoData) {
+                mensagem = `Não encontramos lojas em ${cidade}. Veja as opções na capital do estado (${uf}):`;
+                lojasLista = [{ nome: 'Magazine Luiza - Centro', end: 'Rua Principal, 100', tempo: '3 dias' }];
+                cidadeExibicao = 'Capital';
+            } else {
+                if (estadoData[cidade]) {
+                    // Tem loja na cidade
+                    lojasLista = estadoData[cidade];
+                } else {
+                    // Não tem loja na cidade, puxa a cidade vizinha/principal do estado
+                    let cidadeVizinha = estadoData['default'];
+                    mensagem = `Não encontramos lojas em ${cidade}. Veja as opções mais próximas em ${cidadeVizinha} - ${uf}:`;
+                    lojasLista = estadoData[cidadeVizinha];
+                    cidadeExibicao = cidadeVizinha;
+                }
+            }
+            return { lojas: lojasLista, mensagem: mensagem, cidadeRef: cidadeExibicao };
+        }
+
+        function selectFrete(tipo, valor) {
+            $('#tipo-frete').val(tipo);
+            valorFrete = valor;
+            
+            $('.frete-btn').removeClass('active');
+            $('.frete-btn .radio-circle').css({
+                'border-color': '',
+                'background-color': '',
+                'box-shadow': ''
+            });
+
+            const btn = $(`.frete-btn[data-valor="${valor}"]`).first(); // Or match by class
             event.currentTarget.classList.add('active');
             
             recalcTotals();
 
             if (tipo === 'loja') {
-                const cidade = $('#cidade').val() || 'sua cidade';
-                const uf = $('#estado').val() || '';
+                const cidade = $('#cidade').val();
+                const uf = $('#estado').val();
                 
-                $('#lista-lojas').html(`
-                    <label class="flex items-start gap-2 p-2 bg-white border rounded cursor-pointer mt-1">
-                        <input type="radio" name="loja_escolhida" checked class="mt-1 text-[#0086ff] focus:ring-[#0086ff]">
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-gray-800">Magazine Luiza - Centro</p>
-                            <p class="text-xs text-gray-500">Disponível em 2 horas em ${cidade} ${uf ? '- '+uf : ''}</p>
-                            <p class="text-[10px] text-green-600 font-semibold mt-1">✓ Sem taxa de retirada</p>
-                        </div>
-                    </label>
-                `);
+                if (!cidade || !uf) {
+                    $('#lista-lojas').html(`<p class="text-sm text-red-500 p-2">Por favor, preencha o CEP primeiro para buscarmos as lojas.</p>`);
+                    $('#mapa-loja-container').slideDown();
+                    return;
+                }
+
+                const result = getLojas(cidade, uf);
+                let html = '';
+                
+                if (result.mensagem) {
+                    html += `<p class="text-xs text-orange-600 mb-3 font-medium bg-orange-50 p-2 rounded border border-orange-200">ℹ️ ${result.mensagem}</p>`;
+                }
+
+                result.lojas.forEach((loja, index) => {
+                    html += `
+                        <label class="flex items-start gap-3 p-3 bg-white border rounded-lg cursor-pointer mt-2 hover:border-[#0086ff] transition">
+                            <input type="radio" name="loja_escolhida" value="${loja.nome}" ${index === 0 ? 'checked' : ''} class="mt-1 text-[#0086ff] focus:ring-[#0086ff]">
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-gray-800">${loja.nome}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">${loja.end}</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Disponível em ${loja.tempo}</p>
+                                <p class="text-[10px] text-green-600 font-semibold mt-1">✓ Sem taxa de retirada</p>
+                            </div>
+                        </label>
+                    `;
+                });
+                
+                $('#lista-lojas').html(html);
                 $('#mapa-loja-container').slideDown();
             } else {
                 $('#mapa-loja-container').slideUp();
