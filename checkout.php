@@ -279,6 +279,17 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                             <p class="text-xs text-muted-foreground mt-0.5">Escolha a loja mais próxima</p>
                         </div>
                     </button>
+
+                    <!-- Lista Mockup de Lojas Magalu da Cidade -->
+                    <div id="mapa-loja-container" style="display: none;" class="mt-3 bg-blue-50 border border-[#0086ff] rounded-lg p-3">
+                        <p class="text-xs font-semibold text-[#0086ff] mb-2 flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            Lojas disponíveis para retirada:
+                        </p>
+                        <div id="lista-lojas">
+                            <!-- Injetado por JS -->
+                        </div>
+                    </div>
                 </section>
                 
                 <section class="bg-white border rounded-lg p-4 text-sm mb-4">
@@ -389,6 +400,25 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
             event.currentTarget.classList.add('active');
             
             recalcTotals();
+
+            if (tipo === 'loja') {
+                const cidade = $('#cidade').val() || 'sua cidade';
+                const uf = $('#estado').val() || '';
+                
+                $('#lista-lojas').html(`
+                    <label class="flex items-start gap-2 p-2 bg-white border rounded cursor-pointer mt-1">
+                        <input type="radio" name="loja_escolhida" checked class="mt-1 text-[#0086ff] focus:ring-[#0086ff]">
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-gray-800">Magazine Luiza - Centro</p>
+                            <p class="text-xs text-gray-500">Disponível em 2 horas em ${cidade} ${uf ? '- '+uf : ''}</p>
+                            <p class="text-[10px] text-green-600 font-semibold mt-1">✓ Sem taxa de retirada</p>
+                        </div>
+                    </label>
+                `);
+                $('#mapa-loja-container').slideDown();
+            } else {
+                $('#mapa-loja-container').slideUp();
+            }
         }
 
         $(document).ready(function(){
