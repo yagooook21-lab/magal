@@ -34,7 +34,11 @@ echo fb_pixel_event_script('InitiateCheckout', [
 $sql_conf = mysqli_query($conn, "SELECT * FROM config LIMIT 1");
 $row_conf = $sql_conf ? mysqli_fetch_assoc($sql_conf) : null;
 $nome_loja = $row_conf['nome'] ?? 'Minha Loja';
+$cor = $row_conf['cor'] ?? '#ffe600';
 $img_src = (strpos((string)$img, 'http') === 0) ? $img : "./arquivos/produtos/$codigo/$img";
+
+$logo_files = glob("arquivos/logo/*.png");
+$logo_loja = !empty($logo_files) ? $logo_files[0] : "";
 
 ?>
 <!DOCTYPE html>
@@ -74,6 +78,19 @@ $img_src = (strpos((string)$img, 'http') === 0) ? $img : "./arquivos/produtos/$c
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Header Original (Logo e Cor da Loja) -->
+    <header style="background-color: <?php echo $cor; ?>; padding: 8px 16px; position: sticky; top: 0; z-index: 100;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="display: flex; align-items: center; justify-content: center; padding: 12px 0;">
+          <?php if(!empty($logo_loja)): ?>
+            <img src="<?php echo $logo_loja; ?>" alt="<?php echo $nome_loja; ?>" style="max-height: 40px; object-fit: contain;">
+          <?php else: ?>
+            <span style="font-weight: bold; font-size: 18px; color: #333;"><?php echo $nome_loja; ?></span>
+          <?php endif; ?>
+        </div>
+      </div>
+    </header>
+
     <div class="max-w-2xl mx-auto p-4 space-y-4">
         <div class="space-y-2">
             <!-- Banner da Loja / Promoção -->
