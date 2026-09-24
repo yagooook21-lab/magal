@@ -72,7 +72,6 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
     
     <style>
         body { background-color: #f9fafb; -webkit-font-smoothing: antialiased; }
-        .hidden-section { display: none; margin-top: 12px; }
         /* Corrige o input outline focus default do tailwind nas bordas */
         input:focus { outline: none !important; }
         
@@ -189,7 +188,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                         </div>
                     </label>
                     
-                    <div id="endereco-extra" class="hidden-section grid grid-cols-1 gap-3">
+                    <div id="endereco-extra" class="hidden grid grid-cols-1 gap-3 mt-3">
                         <label class="block text-sm">
                             <span class="block text-xs font-semibold mb-1 text-muted-foreground">Rua</span>
                             <div class="relative">
@@ -234,7 +233,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                 </section>
 
                 <!-- Forma de Entrega Oculta inicialmente -->
-                <section id="forma-entrega-section" class="bg-white border rounded-lg p-4 mb-4 hidden-section">
+                <section id="forma-entrega-section" class="bg-white border rounded-lg p-4 mb-4 hidden mt-4">
                     <h2 class="font-bold mb-3">Forma de entrega</h2>
                     <input type="hidden" id="tipo-frete" value="padrao">
                     
@@ -566,9 +565,13 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                             $('#estado').val(json.uf || '');
                             
                             // Mostra os campos extras
-                            $('#endereco-extra').slideDown();
-                            $('#forma-entrega-section').slideDown();
+                            $('#endereco-extra').removeClass('hidden').hide().slideDown();
+                            $('#forma-entrega-section').removeClass('hidden').hide().slideDown();
                             
+                            // Seleciona o padrão automaticamente
+                            const btnPadrao = $(`.frete-btn[data-valor="0"]`).first()[0];
+                            selectFrete('padrao', 0, btnPadrao);
+
                             $('#numero').focus();
                         }
                     });
