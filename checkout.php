@@ -238,7 +238,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                     <h2 class="font-bold mb-3">Forma de entrega</h2>
                     <input type="hidden" id="tipo-frete" value="padrao">
                     
-                    <button type="button" onclick="selectFrete('padrao', 0)" class="frete-btn active w-full flex items-start gap-3 border rounded-lg p-3 text-left mb-2 transition border-border" data-valor="0">
+                    <button type="button" onclick="selectFrete('padrao', 0, this)" class="frete-btn active w-full flex items-start gap-3 border rounded-lg p-3 text-left mb-2 transition border-border" data-valor="0">
                         <div class="radio-circle mt-0.5 h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center border-muted-foreground"></div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-2">
@@ -252,7 +252,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                         </div>
                     </button>
                     
-                    <button type="button" onclick="selectFrete('expressa', 19.90)" class="frete-btn w-full flex items-start gap-3 border rounded-lg p-3 text-left mb-2 transition border-border" data-valor="19.90">
+                    <button type="button" onclick="selectFrete('expressa', 19.90, this)" class="frete-btn w-full flex items-start gap-3 border rounded-lg p-3 text-left mb-2 transition border-border" data-valor="19.90">
                         <div class="radio-circle mt-0.5 h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center border-muted-foreground"></div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-2">
@@ -266,7 +266,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                         </div>
                     </button>
                     
-                    <button type="button" onclick="selectFrete('loja', 0)" class="frete-btn w-full flex items-start gap-3 border rounded-lg p-3 text-left transition border-border" data-valor="0">
+                    <button type="button" onclick="selectFrete('loja', 0, this)" class="frete-btn w-full flex items-start gap-3 border rounded-lg p-3 text-left transition border-border" data-valor="0">
                         <div class="radio-circle mt-0.5 h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center border-muted-foreground"></div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-2">
@@ -480,7 +480,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
             return { lojas: lojasLista, mensagem: mensagem, cidadeRef: cidadeExibicao };
         }
 
-        function selectFrete(tipo, valor) {
+        function selectFrete(tipo, valor, elem) {
             $('#tipo-frete').val(tipo);
             valorFrete = valor;
             
@@ -491,8 +491,11 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                 'box-shadow': ''
             });
 
-            const btn = $(`.frete-btn[data-valor="${valor}"]`).first(); // Or match by class
-            event.currentTarget.classList.add('active');
+            if (elem) {
+                $(elem).addClass('active');
+            } else {
+                $(`.frete-btn[data-valor="${valor}"]`).first().addClass('active');
+            }
             
             recalcTotals();
 
@@ -571,13 +574,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                     });
                 }
             });
-            
-            // Corrige o evento dos botoes de frete
-            $('.frete-btn').click(function(e) {
-                $('.frete-btn').removeClass('active');
-                $(this).addClass('active');
-                $('#tipo-frete').val($(this).find('.text-sm.font-bold').text());
-            });
+            // Removido evento duplicado das frete-btn para não dar conflito com o onclick
         });
 
         function proceed() {
