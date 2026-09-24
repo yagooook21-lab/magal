@@ -407,7 +407,12 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
             { nome: 'Magazine Luiza - Iguatemi (BA)', end: 'Av. Tancredo Neves, Salvador', lat: -12.9714, lng: -38.5114, tempo: '2 horas', uf: 'BA' },
             { nome: 'Magazine Luiza - Centro (CE)', end: 'Rua do Rosário, Fortaleza', lat: -3.71722, lng: -38.5434, tempo: '2 dias', uf: 'CE' },
             { nome: 'Magazine Luiza - Centro (AM)', end: 'Av. Eduardo Ribeiro, Manaus', lat: -3.1190, lng: -60.0217, tempo: '3 dias', uf: 'AM' },
-            { nome: 'Magazine Luiza - Plano Piloto (DF)', end: 'W3 Sul, Brasília', lat: -15.7942, lng: -47.8822, tempo: '1 dia', uf: 'DF' }
+            { nome: 'Magazine Luiza - Plano Piloto (DF)', end: 'W3 Sul, Brasília', lat: -15.7942, lng: -47.8822, tempo: '1 dia', uf: 'DF' },
+            
+            // Adicionadas lojas em Goiânia para testes:
+            { nome: 'Magazine Luiza - Flamboyant (GO)', end: 'Av. Dep. Jamel Cecílio, 3300', lat: -16.7088, lng: -49.2341, tempo: '2 horas', uf: 'GO' },
+            { nome: 'Magazine Luiza - Centro (GO)', end: 'Av. Anhanguera, 5000', lat: -16.6800, lng: -49.2530, tempo: '2 horas', uf: 'GO' },
+            { nome: 'Magazine Luiza - Passeio das Águas (GO)', end: 'Av. Perimetral Norte, 8303', lat: -16.6267, lng: -49.2719, tempo: '1 dia', uf: 'GO' }
         ];
 
         // Fórmula de Haversine para calcular distância em KM entre duas coordenadas
