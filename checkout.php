@@ -384,18 +384,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
             recalcTotals();
         }
 
-        function selectFrete(tipo, valor) {
-            $('#tipo-frete').val(tipo);
-            valorFrete = valor;
-            
-            $('.frete-btn').removeClass('active');
-            $('.frete-btn .radio-circle').css({
-                'border-color': '',
-                'background-color': '',
-                'box-shadow': ''
-            });
 
-            const btn = $(`.frete-btn[data-valor="${valor}"]`).first(); // Or match by class
         const lojasMock = {
             'SP': {
                 'São Paulo': [
