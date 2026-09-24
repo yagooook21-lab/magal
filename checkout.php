@@ -386,17 +386,28 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
 
 
         const lojasMock = [
-            { nome: 'Magazine Luiza - Paulista (SP)', end: 'Av. Paulista, 1000', lat: -23.56168, lng: -46.65598, tempo: '2 horas' },
-            { nome: 'Magazine Luiza - Centro (SP)', end: 'Rua Direita, 200', lat: -23.5489, lng: -46.6388, tempo: '2 horas' },
-            { nome: 'Magazine Luiza - Centro (RJ)', end: 'Av. Rio Branco, 100', lat: -22.9068, lng: -43.1729, tempo: '2 horas' },
-            { nome: 'Magazine Luiza - Centro (MG)', end: 'Av. Afonso Pena, 1000', lat: -19.9167, lng: -43.9345, tempo: '1 dia' },
-            { nome: 'Magazine Luiza - Centro (MS)', end: 'R. 14 de Julho, 2100, Campo Grande', lat: -20.4697, lng: -54.6201, tempo: '2 horas' },
-            { nome: 'Magazine Luiza - Dourados (MS)', end: 'Av. Marcelino Pires, 1500', lat: -22.2236, lng: -54.8122, tempo: '4 horas' },
-            { nome: 'Magazine Luiza - Centro (PR)', end: 'Rua XV de Novembro, 500, Curitiba', lat: -25.4284, lng: -49.2733, tempo: '2 horas' },
-            { nome: 'Magazine Luiza - Iguatemi (BA)', end: 'Av. Tancredo Neves, Salvador', lat: -12.9714, lng: -38.5114, tempo: '2 horas' },
-            { nome: 'Magazine Luiza - Centro (CE)', end: 'Rua do Rosário, Fortaleza', lat: -3.71722, lng: -38.5434, tempo: '2 dias' },
-            { nome: 'Magazine Luiza - Centro (AM)', end: 'Av. Eduardo Ribeiro, Manaus', lat: -3.1190, lng: -60.0217, tempo: '3 dias' },
-            { nome: 'Magazine Luiza - Plano Piloto (DF)', end: 'W3 Sul, Brasília', lat: -15.7942, lng: -47.8822, tempo: '1 dia' }
+            { nome: 'Magazine Luiza - Paulista (SP)', end: 'Av. Paulista, 1000', lat: -23.56168, lng: -46.65598, tempo: '2 horas', uf: 'SP' },
+            { nome: 'Magazine Luiza - Centro (SP)', end: 'Rua Direita, 200', lat: -23.5489, lng: -46.6388, tempo: '2 horas', uf: 'SP' },
+            { nome: 'Magazine Luiza - Tatuapé (SP)', end: 'Rua Tuiuti, 2000', lat: -23.5406, lng: -46.5768, tempo: '2 horas', uf: 'SP' },
+            { nome: 'Magazine Luiza - Interlagos (SP)', end: 'Av. Interlagos, 2255', lat: -23.6766, lng: -46.6744, tempo: '4 horas', uf: 'SP' },
+            { nome: 'Magazine Luiza - Campinas (SP)', end: 'R. Barão de Jaguara, 1000', lat: -22.9056, lng: -47.0608, tempo: '1 dia', uf: 'SP' },
+            
+            { nome: 'Magazine Luiza - Centro (RJ)', end: 'Av. Rio Branco, 100', lat: -22.9068, lng: -43.1729, tempo: '2 horas', uf: 'RJ' },
+            { nome: 'Magazine Luiza - Copacabana (RJ)', end: 'Av. N. Sra. de Copacabana, 500', lat: -22.9711, lng: -43.1825, tempo: '2 horas', uf: 'RJ' },
+            
+            { nome: 'Magazine Luiza - Centro (MG)', end: 'Av. Afonso Pena, 1000', lat: -19.9167, lng: -43.9345, tempo: '1 dia', uf: 'MG' },
+            
+            { nome: 'Magazine Luiza - Centro (MS)', end: 'R. 14 de Julho, 2100, Campo Grande', lat: -20.4697, lng: -54.6201, tempo: '2 horas', uf: 'MS' },
+            { nome: 'Magazine Luiza - Norte Sul (MS)', end: 'Av. Pres. Ernesto Geisel, Campo Grande', lat: -20.4900, lng: -54.6150, tempo: '2 horas', uf: 'MS' },
+            { nome: 'Magazine Luiza - Dourados (MS)', end: 'Av. Marcelino Pires, 1500', lat: -22.2236, lng: -54.8122, tempo: '4 horas', uf: 'MS' },
+            
+            { nome: 'Magazine Luiza - Centro (PR)', end: 'Rua XV de Novembro, 500, Curitiba', lat: -25.4284, lng: -49.2733, tempo: '2 horas', uf: 'PR' },
+            { nome: 'Magazine Luiza - Palladium (PR)', end: 'Av. Pres. Kennedy, 4121, Curitiba', lat: -25.4740, lng: -49.2900, tempo: '4 horas', uf: 'PR' },
+            
+            { nome: 'Magazine Luiza - Iguatemi (BA)', end: 'Av. Tancredo Neves, Salvador', lat: -12.9714, lng: -38.5114, tempo: '2 horas', uf: 'BA' },
+            { nome: 'Magazine Luiza - Centro (CE)', end: 'Rua do Rosário, Fortaleza', lat: -3.71722, lng: -38.5434, tempo: '2 dias', uf: 'CE' },
+            { nome: 'Magazine Luiza - Centro (AM)', end: 'Av. Eduardo Ribeiro, Manaus', lat: -3.1190, lng: -60.0217, tempo: '3 dias', uf: 'AM' },
+            { nome: 'Magazine Luiza - Plano Piloto (DF)', end: 'W3 Sul, Brasília', lat: -15.7942, lng: -47.8822, tempo: '1 dia', uf: 'DF' }
         ];
 
         // Fórmula de Haversine para calcular distância em KM entre duas coordenadas
@@ -418,11 +429,18 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
         let userLng = null;
 
         function getLojas(userLat, userLng) {
-            // Se por acaso a BrasilAPI não retornou coordenadas, retornamos um fallback
+            // Fallback: se não temos latitude/longitude (falha na API), vamos buscar pelo UF preenchido no input
             if (!userLat || !userLng) {
+                const ufAtual = $('#estado').val() || 'SP';
+                let lojasEstado = lojasMock.filter(loja => loja.uf === ufAtual);
+                
+                if (lojasEstado.length === 0) {
+                    lojasEstado = [lojasMock[0], lojasMock[1]]; // Padrão SP
+                }
+                
                 return { 
-                    lojas: [lojasMock[0], lojasMock[1]], 
-                    mensagem: "Sua localização exata não foi encontrada, exibindo as principais lojas:"
+                    lojas: lojasEstado.slice(0, 4), 
+                    mensagem: `Sua localização exata não foi encontrada, mas exibimos opções para o estado ${ufAtual}:`
                 };
             }
 
@@ -435,15 +453,15 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
             // Ordena da mais próxima para a mais distante
             lojasComDistancia.sort((a, b) => a.distancia - b.distancia);
 
-            // Pega as 2 lojas mais próximas
-            let maisProximas = lojasComDistancia.slice(0, 2);
+            // Pega as 4 lojas mais próximas
+            let maisProximas = lojasComDistancia.slice(0, 4);
             let lojaMaisProxima = maisProximas[0];
             
             let mensagem = "";
             if (lojaMaisProxima.distancia > 50) {
-                mensagem = `Não há lojas na sua cidade. A mais próxima fica a ${Math.round(lojaMaisProxima.distancia)} km de distância.`;
+                mensagem = `Não há lojas muito próximas. A unidade mais perto fica a ${Math.round(lojaMaisProxima.distancia)} km de distância. Veja as opções:`;
             } else {
-                mensagem = `Encontramos opções a partir de ${Math.round(lojaMaisProxima.distancia)} km de você:`;
+                mensagem = `Encontramos diversas opções a partir de ${Math.round(lojaMaisProxima.distancia)} km de você:`;
             }
 
             // Formata a distância para exibição no HTML
