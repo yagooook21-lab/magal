@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CriativoMaker AI – Crie Vídeos Comerciais com Inteligência Artificial</title>
+  <meta name="description" content="Crie vídeos comerciais profissionais com IA. Gere imagens automaticamente, adicione textos e exporte vídeos prontos para redes sociais.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header id="app-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🎬</span>
+        <span class="logo-text">CriativoMaker <span class="ai-badge">AI</span></span>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-tab active" data-tab="ai-tab" onclick="switchTab('ai-tab')">🤖 Criar com IA</button>
+        <button class="nav-tab" data-tab="manual-tab" onclick="switchTab('manual-tab')">🖼️ Editor Manual</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <section id="hero">
+    <div class="hero-bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="hero-content">
+      <h1>Crie <span class="gradient-text">Vídeos Comerciais</span> com IA</h1>
+      <p class="hero-subtitle">Descreva seu produto e a inteligência artificial gera imagens, textos e monta o vídeo comercial completo. Tudo no navegador.</p>
+      <div class="hero-features">
+        <div class="hero-feature"><span>🧠</span> IA Gera Imagens</div>
+        <div class="hero-feature"><span>✍️</span> Textos Automáticos</div>
+        <div class="hero-feature"><span>🎬</span> Vídeo Pronto</div>
+        <div class="hero-feature"><span>📱</span> Stories & Reels</div>
+      </div>
+      <button id="btn-start" class="btn-primary btn-glow" onclick="document.getElementById('ai-section').scrollIntoView({behavior:'smooth'})">
+        <span>Criar Vídeo com IA</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════ AI SECTION ═══════════════ -->
+  <section id="ai-section" class="tab-content active" data-tab="ai-tab">
+    <div class="ai-container">
+
+      <!-- AI Input Panel -->
+      <div class="ai-input-panel panel">
+        <div class="panel-header">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1a3 3 0 0 1 3 3v1a2 2 0 0 1-2 2h-1v5a4 4 0 0 1-8 0v-5H7a2 2 0 0 1-2-2v-1a3 3 0 0 1 3-3V6a4 4 0 0 1 4-4z"/></svg>
+            Descreva seu Comercial
+          </h2>
+        </div>
+
+        <!-- Product name -->
+        <div class="control-group">
+          <label class="control-label" for="ai-product">Nome do Produto / Marca</label>
+          <input type="text" id="ai-product" class="input-styled" placeholder="Ex.: Nike Air Max, Café Especial, Curso de Marketing...">
+        </div>
+
+        <!-- Product description -->
+        <div class="control-group">
+          <label class="control-label" for="ai-description">Descrição do Produto</label>
+          <textarea id="ai-description" class="textarea-styled" rows="3" placeholder="Descreva o produto, seus benefícios e diferenciais..."></textarea>
+        </div>
+
+        <!-- Commercial style -->
+        <div class="control-group">
+          <label class="control-label" for="ai-style">Estilo do Comercial</label>
+          <select id="ai-style" class="select-styled">
+            <option value="modern">Moderno & Minimalista</option>
+            <option value="luxury">Luxo & Premium</option>
+            <option value="vibrant">Vibrante & Colorido</option>
+            <option value="nature">Natural & Orgânico</option>
+            <option value="tech">Tecnologia & Futurista</option>
+            <option value="food">Gastronomia & Food</option>
+            <option value="fashion">Moda & Lifestyle</option>
+            <option value="fitness">Fitness & Saúde</option>
+            <option value="corporate">Corporativo & Profissional</option>
+            <option value="playful">Divertido & Jovem</option>
+          </select>
+        </div>
+
+        <!-- Target audience -->
+        <div class="control-group">
+          <label class="control-label" for="ai-audience">Público-Alvo</label>
+          <input type="text" id="ai-audience" class="input-styled" placeholder="Ex.: Jovens 18-30, Empreendedores, Mães...">
+        </div>
+
+        <!-- Number of slides -->
+        <div class="control-group">
+          <label class="control-label" for="ai-slides">Quantidade de Slides</label>
+          <div class="range-wrapper">
+            <input type="range" id="ai-slides" min="3" max="8" value="5" step="1">
+            <span id="ai-slides-val" class="range-value">5</span>
+          </div>
+        </div>
+
+        <!-- Format -->
+        <div class="control-group">
+          <label class="control-label" for="ai-format">Formato</label>
+          <select id="ai-format" class="select-styled">
+            <option value="1080x1920">Story / Reels (9:16)</option>
+            <option value="1920x1080" selected>Paisagem HD (16:9)</option>
+            <option value="1080x1080">Quadrado (1:1)</option>
+          </select>
+        </div>
+
+        <!-- CTA -->
+        <div class="control-group">
+          <label class="control-label" for="ai-cta">Chamada para Ação (CTA)</label>
+          <input type="text" id="ai-cta" class="input-styled" placeholder="Ex.: Compre agora!, Saiba mais, Acesse o site">
+        </div>
+
+        <!-- Generate button -->
+        <button id="btn-generate-ai" class="btn-primary btn-ai-generate" onclick="generateAICommercial()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span>Gerar Comercial com IA</span>
+        </button>
+
+        <!-- AI Status -->
+        <div id="ai-status" class="ai-status hidden">
+          <div class="ai-status-spinner"></div>
+          <p id="ai-status-text">Gerando imagens com IA...</p>
+          <div class="progress-bar">
+            <div id="ai-progress-fill" class="progress-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Preview Panel -->
+      <div class="ai-preview-panel panel panel-main">
+        <div class="panel-header">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Preview do Comercial
+          </h2>
+          <div class="preview-actions">
+            <button id="btn-play-preview" class="btn-icon" title="Play Preview">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button id="btn-stop-preview" class="btn-icon" title="Parar Preview" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="canvas-container">
+          <canvas id="preview-canvas"></canvas>
+          <div id="empty-canvas-msg">
+            <div class="empty-canvas-icon">
+              <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <p>Descreva seu produto e clique em <strong>"Gerar Comercial com IA"</strong></p>
+            <span>A IA criará imagens e textos automaticamente</span>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div id="timeline">
+          <div id="timeline-track"></div>
+          <div id="timeline-playhead"></div>
+        </div>
+
+        <!-- Export button -->
+        <div class="export-bar">
+          <button id="btn-export" class="btn-primary btn-export" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Exportar Vídeo (WebM)</span>
+          </button>
+          <div id="export-progress" class="export-progress hidden">
+            <div class="progress-bar">
+              <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <span id="progress-text">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Slides Editor Panel -->
+      <div class="ai-slides-panel panel">
+        <div class="panel-header">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editar Slides
+          </h2>
+        </div>
+        <div id="ai-slides-list" class="ai-slides-list">
+          <div class="ai-slides-empty">
+            <p>Os slides aparecerão aqui após a geração</p>
+          </div>
+        </div>
+
+        <!-- Video settings -->
+        <div class="control-group" style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
+          <label class="control-label">Configurações do Vídeo</label>
+          <div class="settings-mini-grid">
+            <div>
+              <label class="control-label-sm">Duração/Slide</label>
+              <div class="range-wrapper">
+                <input type="range" id="slide-duration" min="1" max="10" value="3" step="0.5">
+                <span id="slide-duration-val" class="range-value">3s</span>
+              </div>
+            </div>
+            <div>
+              <label class="control-label-sm">Transição</label>
+              <select id="transition-select" class="select-styled select-sm">
+                <option value="fade">Fade</option>
+                <option value="slide-left">Slide Esq.</option>
+                <option value="slide-right">Slide Dir.</option>
+                <option value="zoom-in">Zoom In</option>
+                <option value="zoom-out">Zoom Out</option>
+                <option value="none">Sem</option>
+              </select>
+            </div>
+            <div>
+              <label class="control-label-sm">Tempo Transição</label>
+              <div class="range-wrapper">
+                <input type="range" id="transition-duration" min="0.2" max="2" value="0.5" step="0.1">
+                <span id="transition-duration-val" class="range-value">0.5s</span>
+              </div>
+            </div>
+            <div>
+              <label class="control-label-sm">FPS</label>
+              <select id="fps-select" class="select-styled select-sm">
+                <option value="24">24</option>
+                <option value="30" selected>30</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════ MANUAL EDITOR SECTION ═══════════════ -->
+  <section id="manual-section" class="tab-content" data-tab="manual-tab">
+    <div class="editor-grid">
+
+      <!-- LEFT PANEL: Controls -->
+      <aside id="controls-panel" class="panel">
+        <div class="panel-header">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            Configurações
+          </h2>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Imagens</label>
+          <div id="dropzone" class="dropzone">
+            <input type="file" id="file-input" accept="image/*" multiple hidden>
+            <div class="dropzone-content">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p>Arraste imagens aqui ou <strong>clique para selecionar</strong></p>
+              <span class="dropzone-hint">PNG, JPG, WEBP – até 20 imagens</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Ordem das Imagens <span id="img-count" class="badge">0</span></label>
+          <div id="image-list" class="image-list"></div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="manual-resolution">Resolução</label>
+          <select id="manual-resolution" class="select-styled">
+            <option value="1080x1920">Story / Reels (1080×1920)</option>
+            <option value="1920x1080" selected>Paisagem HD (1920×1080)</option>
+            <option value="1080x1080">Quadrado (1080×1080)</option>
+            <option value="1280x720">HD 720p (1280×720)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="bg-color">Cor de Fundo</label>
+          <div class="color-input-wrapper">
+            <input type="color" id="bg-color" value="#000000">
+            <span id="bg-color-hex">#000000</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER: Canvas -->
+      <section id="manual-preview" class="panel panel-main">
+        <div class="panel-header">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Preview Manual
+          </h2>
+          <div class="preview-actions">
+            <button id="btn-play-manual" class="btn-icon" title="Play">▶</button>
+            <button id="btn-stop-manual" class="btn-icon" title="Parar" disabled>⏸</button>
+          </div>
+        </div>
+        <div id="manual-canvas-container" class="canvas-container-inner">
+          <canvas id="manual-canvas"></canvas>
+          <div id="manual-empty-msg" class="empty-canvas-msg-inner">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <p>Adicione imagens para começar</p>
+          </div>
+        </div>
+        <div class="export-bar">
+          <button id="btn-export-manual" class="btn-primary btn-export" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Exportar Vídeo</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL: Text Overlays -->
+      <aside id="text-panel" class="panel">
+        <div class="panel-header">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            Textos / Legendas
+          </h2>
+          <button id="btn-add-text" class="btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Adicionar
+          </button>
+        </div>
+        <div id="text-overlays-list"></div>
+        <div class="control-group" style="margin-top: 1rem;">
+          <label class="control-label">Estilo do Texto</label>
+          <div class="text-style-row">
+            <select id="font-family" class="select-styled select-sm">
+              <option value="Inter">Inter</option>
+              <option value="Arial">Arial</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Impact">Impact</option>
+              <option value="Verdana">Verdana</option>
+            </select>
+            <input type="number" id="font-size" class="input-sm" value="48" min="10" max="200" title="Tamanho (px)">
+          </div>
+          <div class="text-style-row">
+            <div class="color-input-wrapper compact">
+              <input type="color" id="text-color" value="#ffffff">
+              <span>Texto</span>
+            </div>
+            <div class="color-input-wrapper compact">
+              <input type="color" id="text-stroke-color" value="#000000">
+              <span>Contorno</span>
+            </div>
+            <input type="number" id="text-stroke-width" class="input-sm" value="2" min="0" max="10" title="Espessura">
+          </div>
+          <div class="text-style-row">
+            <label class="checkbox-label"><input type="checkbox" id="text-bold"> <strong>B</strong></label>
+            <label class="checkbox-label"><input type="checkbox" id="text-italic"> <em>I</em></label>
+            <label class="checkbox-label"><input type="checkbox" id="text-shadow-toggle" checked> Sombra</label>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer id="app-footer">
+    <p>CriativoMaker AI © 2026 — Gerador de vídeos comerciais com Inteligência Artificial</p>
+  </footer>
+
+  <!-- Hidden elements for resolution settings used by AI mode -->
+  <select id="resolution-select" class="hidden">
+    <option value="1920x1080" selected>HD</option>
+  </select>
+
+  <script src="app.js"></script>
+</body>
+</html>
