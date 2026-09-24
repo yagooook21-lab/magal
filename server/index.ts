@@ -18,8 +18,13 @@ async function startServer() {
 
   app.use(express.static(staticPath));
 
-  // Handle client-side routing - serve index.html for all routes
-  app.get("*", (_req, res) => {
+  // API Backend
+  const apiRouter = (await import('./api.js')).default;
+  app.use('/api', apiRouter);
+
+  // Handle client-side routing - serve index.html for all routes (except API)
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
     res.sendFile(path.join(staticPath, "index.html"));
   });
 

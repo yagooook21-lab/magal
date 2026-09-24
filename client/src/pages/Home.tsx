@@ -206,13 +206,37 @@ function Products({ notify }: { notify: (v: string) => void }) {
       console.error(e);
     }
   };
-  const saveProduct = () => {
+  const saveProduct = async () => {
     if (!form.title.trim() || !form.price.trim()) { notify('Preencha pelo menos título e preço'); return; }
     const imageUrls = form.imageUrls.split(',').map((url) => url.trim()).filter(Boolean);
-    const item = { name: form.title, price: 'R$ ' + Number(form.price.replace(',', '.')).toFixed(2).replace('.', ','), meta: '0 pedidos · 0 pagos', image: imageUrls[0] || productImages[0], slug: form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), description: form.description, brand: form.brand, originalPrice: form.originalPrice, rating: form.rating, reviewsCount: form.reviewsCount, category: form.category, imageUrls: imageUrls.length ? imageUrls : [productImages[0]], variations: form.variations, reviews: form.reviews };
-    setItems((current) => editingId === null ? [item, ...current] : current.map((existing, index) => index === editingId ? item : existing));
-    setEditorOpen(false);
-    notify('Produto salvo no catálogo demonstrativo');
+    const slug = form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const item = { name: form.title, price: 'R$ ' + Number(form.price.replace(',', '.')).toFixed(2).replace('.', ','), meta: '0 pedidos · 0 pagos', image: imageUrls[0] || productImages[0], slug, description: form.description, brand: form.brand, originalPrice: form.originalPrice, rating: form.rating, reviewsCount: form.reviewsCount, category: form.category, imageUrls: imageUrls.length ? imageUrls : [productImages[0]], variations: form.variations, reviews: form.reviews };
+    
+    try {
+      await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: item.name,
+          slug: item.slug,
+          brand: item.brand,
+          price: item.price,
+          originalPrice: item.originalPrice,
+          rating: item.rating,
+          reviewsCount: item.reviewsCount,
+          category: item.category,
+          description: item.description,
+          imageUrls: item.imageUrls.join(', '),
+          variations: item.variations,
+          reviews: item.reviews
+        })
+      });
+      setItems((current) => editingId === null ? [item, ...current] : current.map((existing, index) => index === editingId ? item : existing));
+      setEditorOpen(false);
+      notify('Produto salvo permanentemente no banco de dados!');
+    } catch (err) {
+      notify('Erro ao salvar no banco de dados');
+    }
   };
   return <>
     <div className="page-header"><div><div className="page-eyebrow">Painel Admin</div><h1 className="page-title">Meus Produtos</h1><p className="page-description">Cadastre pelo HTML da página ou preencha manualmente os dados que alimentam o índice público mobile.</p></div><button className="btn primary" onClick={() => openEditor()}><Plus size={13} /> Adicionar produto</button></div>
