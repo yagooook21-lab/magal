@@ -385,87 +385,76 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
         }
 
 
-        const lojasMock = {
-            'SP': {
-                'São Paulo': [
-                    { nome: 'Magazine Luiza - Paulista', end: 'Av. Paulista, 1000', tempo: '2 horas' },
-                    { nome: 'Magazine Luiza - Interlagos', end: 'Av. Interlagos, 2255', tempo: '2 horas' },
-                    { nome: 'Magazine Luiza - Tatuapé', end: 'Rua Tuiuti, 2000', tempo: '4 horas' }
-                ],
-                'Campinas': [
-                    { nome: 'Magazine Luiza - Centro', end: 'R. Barão de Jaguara, 1000', tempo: '1 dia' }
-                ],
-                'default': 'São Paulo'
-            },
-            'RJ': {
-                'Rio de Janeiro': [
-                    { nome: 'Magazine Luiza - Copacabana', end: 'Av. N. Sra. de Copacabana, 500', tempo: '2 horas' },
-                    { nome: 'Magazine Luiza - Barra', end: 'Av. das Américas, 4666', tempo: '1 dia' }
-                ],
-                'default': 'Rio de Janeiro'
-            },
-            'MG': {
-                'Belo Horizonte': [
-                    { nome: 'Magazine Luiza - Centro', end: 'Av. Afonso Pena, 1000', tempo: '2 horas' },
-                    { nome: 'Magazine Luiza - Savassi', end: 'Av. do Contorno, 6000', tempo: '4 horas' }
-                ],
-                'default': 'Belo Horizonte'
-            },
-            'MS': {
-                'Campo Grande': [
-                    { nome: 'Magazine Luiza - Centro', end: 'R. 14 de Julho, 2100', tempo: '2 horas' },
-                    { nome: 'Magazine Luiza - Norte Sul', end: 'Av. Pres. Ernesto Geisel, 2300', tempo: '4 horas' }
-                ],
-                'Dourados': [
-                    { nome: 'Magazine Luiza - Centro', end: 'Av. Marcelino Pires, 1500', tempo: '2 horas' }
-                ],
-                'default': 'Campo Grande'
-            },
-            'RS': {
-                'Porto Alegre': [
-                    { nome: 'Magazine Luiza - Centro Histórico', end: 'Rua dos Andradas, 1234', tempo: '2 horas' }
-                ],
-                'default': 'Porto Alegre'
-            },
-            'PR': {
-                'Curitiba': [
-                    { nome: 'Magazine Luiza - Centro', end: 'Rua XV de Novembro, 500', tempo: '2 horas' },
-                    { nome: 'Magazine Luiza - Palladium', end: 'Av. Pres. Kennedy, 4121', tempo: '4 horas' }
-                ],
-                'default': 'Curitiba'
-            },
-            'BA': {
-                'Salvador': [
-                    { nome: 'Magazine Luiza - Iguatemi', end: 'Av. Tancredo Neves, 148', tempo: '2 horas' }
-                ],
-                'default': 'Salvador'
-            }
-        };
+        const lojasMock = [
+            { nome: 'Magazine Luiza - Paulista (SP)', end: 'Av. Paulista, 1000', lat: -23.56168, lng: -46.65598, tempo: '2 horas' },
+            { nome: 'Magazine Luiza - Centro (SP)', end: 'Rua Direita, 200', lat: -23.5489, lng: -46.6388, tempo: '2 horas' },
+            { nome: 'Magazine Luiza - Centro (RJ)', end: 'Av. Rio Branco, 100', lat: -22.9068, lng: -43.1729, tempo: '2 horas' },
+            { nome: 'Magazine Luiza - Centro (MG)', end: 'Av. Afonso Pena, 1000', lat: -19.9167, lng: -43.9345, tempo: '1 dia' },
+            { nome: 'Magazine Luiza - Centro (MS)', end: 'R. 14 de Julho, 2100, Campo Grande', lat: -20.4697, lng: -54.6201, tempo: '2 horas' },
+            { nome: 'Magazine Luiza - Dourados (MS)', end: 'Av. Marcelino Pires, 1500', lat: -22.2236, lng: -54.8122, tempo: '4 horas' },
+            { nome: 'Magazine Luiza - Centro (PR)', end: 'Rua XV de Novembro, 500, Curitiba', lat: -25.4284, lng: -49.2733, tempo: '2 horas' },
+            { nome: 'Magazine Luiza - Iguatemi (BA)', end: 'Av. Tancredo Neves, Salvador', lat: -12.9714, lng: -38.5114, tempo: '2 horas' },
+            { nome: 'Magazine Luiza - Centro (CE)', end: 'Rua do Rosário, Fortaleza', lat: -3.71722, lng: -38.5434, tempo: '2 dias' },
+            { nome: 'Magazine Luiza - Centro (AM)', end: 'Av. Eduardo Ribeiro, Manaus', lat: -3.1190, lng: -60.0217, tempo: '3 dias' },
+            { nome: 'Magazine Luiza - Plano Piloto (DF)', end: 'W3 Sul, Brasília', lat: -15.7942, lng: -47.8822, tempo: '1 dia' }
+        ];
 
-        function getLojas(cidade, uf) {
-            let estadoData = lojasMock[uf];
-            let mensagem = "";
-            let lojasLista = [];
-            let cidadeExibicao = cidade;
-            
-            // Se o estado não está no mock, criamos um mock genérico para a Capital do estado
-            if (!estadoData) {
-                mensagem = `Não encontramos lojas em ${cidade}. Veja as opções na capital do estado (${uf}):`;
-                lojasLista = [{ nome: 'Magazine Luiza - Centro', end: 'Rua Principal, 100', tempo: '3 dias' }];
-                cidadeExibicao = 'Capital';
-            } else {
-                if (estadoData[cidade]) {
-                    // Tem loja na cidade
-                    lojasLista = estadoData[cidade];
-                } else {
-                    // Não tem loja na cidade, puxa a cidade vizinha/principal do estado
-                    let cidadeVizinha = estadoData['default'];
-                    mensagem = `Não encontramos lojas em ${cidade}. Veja as opções mais próximas em ${cidadeVizinha} - ${uf}:`;
-                    lojasLista = estadoData[cidadeVizinha];
-                    cidadeExibicao = cidadeVizinha;
-                }
+        // Fórmula de Haversine para calcular distância em KM entre duas coordenadas
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Raio da terra em km
+            const dLat = (lat2 - lat1) * (Math.PI/180);
+            const dLon = (lon2 - lon1) * (Math.PI/180);
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            const d = R * c; 
+            return d;
+        }
+
+        // Variáveis globais para armazenar a localização do usuário
+        let userLat = null;
+        let userLng = null;
+
+        function getLojas(userLat, userLng) {
+            // Se por acaso a BrasilAPI não retornou coordenadas, retornamos um fallback
+            if (!userLat || !userLng) {
+                return { 
+                    lojas: [lojasMock[0], lojasMock[1]], 
+                    mensagem: "Sua localização exata não foi encontrada, exibindo as principais lojas:"
+                };
             }
-            return { lojas: lojasLista, mensagem: mensagem, cidadeRef: cidadeExibicao };
+
+            // Mapeia o array adicionando a distância
+            let lojasComDistancia = lojasMock.map(loja => {
+                let dist = getDistanceFromLatLonInKm(userLat, userLng, loja.lat, loja.lng);
+                return { ...loja, distancia: dist };
+            });
+
+            // Ordena da mais próxima para a mais distante
+            lojasComDistancia.sort((a, b) => a.distancia - b.distancia);
+
+            // Pega as 2 lojas mais próximas
+            let maisProximas = lojasComDistancia.slice(0, 2);
+            let lojaMaisProxima = maisProximas[0];
+            
+            let mensagem = "";
+            if (lojaMaisProxima.distancia > 50) {
+                mensagem = `Não há lojas na sua cidade. A mais próxima fica a ${Math.round(lojaMaisProxima.distancia)} km de distância.`;
+            } else {
+                mensagem = `Encontramos opções a partir de ${Math.round(lojaMaisProxima.distancia)} km de você:`;
+            }
+
+            // Formata a distância para exibição no HTML
+            maisProximas = maisProximas.map(loja => {
+                return {
+                    ...loja,
+                    distanciaDisplay: loja.distancia < 1 ? '< 1 km' : Math.round(loja.distancia) + ' km'
+                };
+            });
+
+            return { lojas: maisProximas, mensagem: mensagem };
         }
 
         function selectFrete(tipo, valor, elem) {
@@ -497,11 +486,11 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                     return;
                 }
 
-                const result = getLojas(cidade, uf);
+                const result = getLojas(userLat, userLng);
                 let html = '';
                 
                 if (result.mensagem) {
-                    html += `<p class="text-xs text-orange-600 mb-3 font-medium bg-orange-50 p-2 rounded border border-orange-200">ℹ️ ${result.mensagem}</p>`;
+                    html += `<p class="text-xs text-orange-600 mb-3 font-medium bg-orange-50 p-2 rounded border border-orange-200">📍 ${result.mensagem}</p>`;
                 }
 
                 result.lojas.forEach((loja, index) => {
@@ -509,7 +498,10 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                         <label class="flex items-start gap-3 p-3 bg-white border rounded-lg cursor-pointer mt-2 hover:border-[#0086ff] transition">
                             <input type="radio" name="loja_escolhida" value="${loja.nome}" ${index === 0 ? 'checked' : ''} class="mt-1 text-[#0086ff] focus:ring-[#0086ff]">
                             <div class="flex-1">
-                                <p class="text-sm font-bold text-gray-800">${loja.nome}</p>
+                                <div class="flex justify-between items-center">
+                                    <p class="text-sm font-bold text-gray-800">${loja.nome}</p>
+                                    <span class="text-xs font-bold text-[#0086ff] bg-blue-50 px-2 py-0.5 rounded">${loja.distanciaDisplay || ''}</span>
+                                </div>
                                 <p class="text-xs text-gray-500 mt-0.5">${loja.end}</p>
                                 <p class="text-[11px] text-gray-400 mt-0.5">Disponível em ${loja.tempo}</p>
                                 <p class="text-[10px] text-green-600 font-semibold mt-1">✓ Sem taxa de retirada</p>
@@ -546,12 +538,24 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
             $('#cep').on('blur', function(){
                 const cep = $(this).val().replace(/\D/g, '');
                 if(cep.length === 8) {
-                    $.getJSON('https://viacep.com.br/ws/' + cep + '/json/', function(json){
-                        if(!json.erro) {
-                            $('#rua').val(json.logradouro || '');
-                            $('#bairro').val(json.bairro || '');
-                            $('#cidade').val(json.localidade || '');
-                            $('#estado').val(json.uf || '');
+                    // Usando BrasilAPI para pegar Latitude e Longitude além do endereço
+                    $.getJSON('https://brasilapi.com.br/api/cep/v2/' + cep, function(json){
+                        // A BrasilAPI não retorna uma flag erro: true igual ao ViaCEP, ela retorna erro 404, 
+                        // mas se caiu no sucesso do getJSON, deu certo.
+                        if(json.city) {
+                            $('#rua').val(json.street || '');
+                            $('#bairro').val(json.neighborhood || '');
+                            $('#cidade').val(json.city || '');
+                            $('#estado').val(json.state || '');
+                            
+                            // Salva as coordenadas para o cálculo de distância do Haversine
+                            if (json.location && json.location.coordinates) {
+                                userLng = json.location.coordinates.longitude;
+                                userLat = json.location.coordinates.latitude;
+                            } else {
+                                userLat = null;
+                                userLng = null;
+                            }
                             
                             // Mostra os campos extras
                             $('#endereco-extra').removeClass('hidden').hide().slideDown();
@@ -561,8 +565,32 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                             const btnPadrao = $(`.frete-btn[data-valor="0"]`).first()[0];
                             selectFrete('padrao', 0, btnPadrao);
 
-                            $('#numero').focus();
+                            if (!json.street) {
+                                $('#rua').focus();
+                            } else {
+                                $('#numero').focus();
+                            }
                         }
+                    }).fail(function() {
+                        // Se falhar a BrasilAPI, tenta ViaCEP como fallback
+                        $.getJSON('https://viacep.com.br/ws/' + cep + '/json/', function(json){
+                            if(!json.erro) {
+                                $('#rua').val(json.logradouro || '');
+                                $('#bairro').val(json.bairro || '');
+                                $('#cidade').val(json.localidade || '');
+                                $('#estado').val(json.uf || '');
+                                
+                                userLat = null; // Sem coordenadas no fallback
+                                userLng = null;
+                                
+                                $('#endereco-extra').removeClass('hidden').hide().slideDown();
+                                $('#forma-entrega-section').removeClass('hidden').hide().slideDown();
+                                
+                                const btnPadrao = $(`.frete-btn[data-valor="0"]`).first()[0];
+                                selectFrete('padrao', 0, btnPadrao);
+                                $('#numero').focus();
+                            }
+                        });
                     });
                 }
             });
