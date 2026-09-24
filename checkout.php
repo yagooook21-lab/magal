@@ -34,12 +34,11 @@ echo fb_pixel_event_script('InitiateCheckout', [
 $sql_conf = mysqli_query($conn, "SELECT * FROM config LIMIT 1");
 $row_conf = $sql_conf ? mysqli_fetch_assoc($sql_conf) : null;
 $nome_loja = $row_conf['nome'] ?? 'Minha Loja';
-$cor = $row_conf['cor'] ?? '#ffe600';
+$cor = $row_conf['cor'] ?? '#0086ff';
 $img_src = (strpos((string)$img, 'http') === 0) ? $img : "./arquivos/produtos/$codigo/$img";
 
 $logo_files = glob("arquivos/logo/*.png");
 $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -63,7 +62,8 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                         'primary-foreground': '#ffffff',
                         muted: '#f3f4f6',
                         'muted-foreground': '#6b7280',
-                        input: '#e5e7eb'
+                        input: '#e5e7eb',
+                        border: '#e5e7eb'
                     }
                 }
             }
@@ -72,20 +72,30 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
     
     <style>
         body { background-color: #f9fafb; -webkit-font-smoothing: antialiased; }
-        .hidden-address { display: none; margin-top: 12px; }
+        .hidden-section { display: none; margin-top: 12px; }
         /* Corrige o input outline focus default do tailwind nas bordas */
         input:focus { outline: none !important; }
+        
+        .frete-btn.active {
+            border-color: #0086ff;
+            background-color: #f0f7ff;
+        }
+        .frete-btn.active .radio-circle {
+            border-color: #0086ff;
+            background-color: #0086ff;
+            box-shadow: inset 0 0 0 4px #fff;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- Header Original (Logo e Cor da Loja) -->
-    <header style="background-color: <?php echo $cor; ?>; padding: 8px 16px; position: sticky; top: 0; z-index: 100;">
+    <header style="background-color: <?php echo $cor; ?>; padding: 8px 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
       <div style="max-width: 1200px; margin: 0 auto;">
         <div style="display: flex; align-items: center; justify-content: center; padding: 12px 0;">
           <?php if(!empty($logo_loja)): ?>
             <img src="<?php echo $logo_loja; ?>" alt="<?php echo $nome_loja; ?>" style="max-height: 40px; object-fit: contain;">
           <?php else: ?>
-            <span style="font-weight: bold; font-size: 18px; color: #333;"><?php echo $nome_loja; ?></span>
+            <span style="font-weight: bold; font-size: 18px; color: #fff;"><?php echo $nome_loja; ?></span>
           <?php endif; ?>
         </div>
       </div>
@@ -95,7 +105,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
         <div class="space-y-2">
             <!-- Banner da Loja / Promoção -->
             <section aria-label="Destaques do checkout" class="w-full">
-                <!-- Se quiser colocar a imagem de banner, ela entra aqui -->
+                <!-- Banner de espaço reservado. Caso o usuário troque na config, pode usar aqui -->
                 <img alt="Banner Destaque" class="w-full h-auto rounded-lg bg-gray-200 object-cover" style="min-height: 80px;" loading="eager" decoding="async" fetchpriority="high" src="/assets/banner-payday-new.png" onerror="this.src='https://via.placeholder.com/800x200/e5e7eb/a1a1aa?text=Banner+Promocional';">
             </section>
             
@@ -179,42 +189,96 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                         </div>
                     </label>
                     
-                    <div id="endereco-extra" class="hidden-address space-y-3">
+                    <div id="endereco-extra" class="hidden-section grid grid-cols-1 gap-3">
                         <label class="block text-sm">
-                            <span class="block text-xs font-semibold mb-1 text-muted-foreground">Rua / Avenida</span>
+                            <span class="block text-xs font-semibold mb-1 text-muted-foreground">Rua</span>
                             <div class="relative">
                                 <input id="rua" required class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 border-input focus:ring-primary" type="text">
                             </div>
                         </label>
-                        <div class="flex gap-3">
-                            <label class="block text-sm flex-1">
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="block text-sm">
                                 <span class="block text-xs font-semibold mb-1 text-muted-foreground">Número</span>
                                 <div class="relative">
                                     <input id="numero" required class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 border-input focus:ring-primary" type="text">
                                 </div>
                             </label>
-                            <label class="block text-sm flex-1">
-                                <span class="block text-xs font-semibold mb-1 text-muted-foreground">Bairro</span>
+                            <label class="block text-sm">
+                                <span class="block text-xs font-semibold mb-1 text-muted-foreground">Complemento</span>
                                 <div class="relative">
-                                    <input id="bairro" required class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 border-input focus:ring-primary" type="text">
+                                    <input id="complemento" class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 border-input focus:ring-primary" type="text">
                                 </div>
                             </label>
                         </div>
-                        <div class="flex gap-3">
-                            <label class="block text-sm flex-[2]">
+                        <label class="block text-sm">
+                            <span class="block text-xs font-semibold mb-1 text-muted-foreground">Bairro</span>
+                            <div class="relative">
+                                <input id="bairro" required class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 border-input focus:ring-primary" type="text">
+                            </div>
+                        </label>
+                        <div class="grid grid-cols-[1fr_80px] gap-3">
+                            <label class="block text-sm">
                                 <span class="block text-xs font-semibold mb-1 text-muted-foreground">Cidade</span>
                                 <div class="relative">
                                     <input id="cidade" required class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 border-input focus:ring-primary" type="text">
                                 </div>
                             </label>
-                            <label class="block text-sm flex-1">
-                                <span class="block text-xs font-semibold mb-1 text-muted-foreground">Estado</span>
+                            <label class="block text-sm">
+                                <span class="block text-xs font-semibold mb-1 text-muted-foreground">UF</span>
                                 <div class="relative">
                                     <input id="estado" required class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 border-input focus:ring-primary" type="text">
                                 </div>
                             </label>
                         </div>
                     </div>
+                </section>
+
+                <!-- Forma de Entrega Oculta inicialmente -->
+                <section id="forma-entrega-section" class="bg-white border rounded-lg p-4 mb-4 hidden-section">
+                    <h2 class="font-bold mb-3">Forma de entrega</h2>
+                    <input type="hidden" id="tipo-frete" value="padrao">
+                    
+                    <button type="button" onclick="selectFrete('padrao', 0)" class="frete-btn active w-full flex items-start gap-3 border rounded-lg p-3 text-left mb-2 transition border-border" data-valor="0">
+                        <div class="radio-circle mt-0.5 h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center border-muted-foreground"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-bold text-sm flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck h-5 w-5 text-primary" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18H9"></path><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path><circle cx="17" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg>
+                                    Entrega padrão
+                                </span>
+                                <span class="text-[#6FBE44] text-sm">Frete grátis</span>
+                            </div>
+                            <p class="text-xs text-muted-foreground mt-0.5">5 a 7 dias úteis · Após pagamento confirmado</p>
+                        </div>
+                    </button>
+                    
+                    <button type="button" onclick="selectFrete('expressa', 19.90)" class="frete-btn w-full flex items-start gap-3 border rounded-lg p-3 text-left mb-2 transition border-border" data-valor="19.90">
+                        <div class="radio-circle mt-0.5 h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center border-muted-foreground"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-bold text-sm flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck h-5 w-5 text-primary" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18H9"></path><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path><circle cx="17" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg>
+                                    Entrega expressa
+                                </span>
+                                <span class="font-bold">R$ 19,90</span>
+                            </div>
+                            <p class="text-xs text-muted-foreground mt-0.5">1 a 3 dias úteis · Após pagamento confirmado</p>
+                        </div>
+                    </button>
+                    
+                    <button type="button" onclick="selectFrete('loja', 0)" class="frete-btn w-full flex items-start gap-3 border rounded-lg p-3 text-left transition border-border" data-valor="0">
+                        <div class="radio-circle mt-0.5 h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center border-muted-foreground"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-bold text-sm flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin h-5 w-5 text-primary" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                    Retirada em loja
+                                </span>
+                                <span class="text-[#6FBE44] text-sm">Grátis</span>
+                            </div>
+                            <p class="text-xs text-muted-foreground mt-0.5">Escolha a loja mais próxima</p>
+                        </div>
+                    </button>
                 </section>
                 
                 <section class="bg-white border rounded-lg p-4 text-sm mb-4">
@@ -224,7 +288,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                     </div>
                     <div class="flex justify-between mb-1">
                         <span>Frete</span>
-                        <span class="text-muted-foreground">—</span>
+                        <span id="summaryFrete" class="text-muted-foreground">—</span>
                     </div>
                     <div class="flex justify-between font-bold text-base pt-2 border-t mt-2">
                         <span>Total</span>
@@ -272,22 +336,30 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
     <script>
         const valorUnitario = <?php echo (float)$valor_num; ?>;
         const codigoProduto = "<?php echo $codigo; ?>";
+        let valorFrete = 0;
 
         function formatarMoeda(valor) {
             return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        function updateQty(change) {
-            let qty = parseInt($('#cart-qty').val()) + change;
-            if (qty < 1) qty = 1;
-            $('#cart-qty').val(qty);
+        function recalcTotals() {
+            let qty = parseInt($('#cart-qty').val());
+            if (isNaN(qty) || qty < 1) qty = 1;
             
-            const total = qty * valorUnitario;
+            const subtotal = qty * valorUnitario;
+            const subtotalFmt = 'R$ ' + formatarMoeda(subtotal);
+            const total = subtotal + valorFrete;
             const totalFmt = 'R$ ' + formatarMoeda(total);
             
-            $('#labelTotalProdutos').text(totalFmt);
-            $('#summarySubtotal').text(totalFmt);
+            $('#labelTotalProdutos').text(subtotalFmt);
+            $('#summarySubtotal').text(subtotalFmt);
             $('#summaryTotal').text(totalFmt);
+            
+            if (valorFrete > 0) {
+                $('#summaryFrete').text('R$ ' + formatarMoeda(valorFrete)).removeClass('text-muted-foreground').addClass('font-bold');
+            } else {
+                $('#summaryFrete').text('Grátis').removeClass('font-bold').addClass('text-[#6FBE44]');
+            }
 
             localStorage.setItem('lojavirtual', JSON.stringify({
                 quantos: qty,
@@ -295,14 +367,36 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
             }));
         }
 
+        function updateQty(change) {
+            let qty = parseInt($('#cart-qty').val()) + change;
+            if (qty < 1) qty = 1;
+            $('#cart-qty').val(qty);
+            recalcTotals();
+        }
+
+        function selectFrete(tipo, valor) {
+            $('#tipo-frete').val(tipo);
+            valorFrete = valor;
+            
+            $('.frete-btn').removeClass('active');
+            $('.frete-btn .radio-circle').css({
+                'border-color': '',
+                'background-color': '',
+                'box-shadow': ''
+            });
+
+            const btn = $(`.frete-btn[data-valor="${valor}"]`).first(); // Or match by class
+            event.currentTarget.classList.add('active');
+            
+            recalcTotals();
+        }
+
         $(document).ready(function(){
-            // Inicializa localStorage
             localStorage.setItem('lojavirtual', JSON.stringify({
                 quantos: 1,
                 precoFinal: formatarMoeda(valorUnitario)
             }));
 
-            // Mascaras
             $('#cpf').mask('000.000.000-00', {reverse: true});
             $('#cep').mask('00000-000');
             var SPMaskBehavior = function (val) {
@@ -315,7 +409,6 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
             };
             $('#telefone').mask(SPMaskBehavior, spOptions);
 
-            // Busca CEP
             $('#cep').on('blur', function(){
                 const cep = $(this).val().replace(/\D/g, '');
                 if(cep.length === 8) {
@@ -325,11 +418,22 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                             $('#bairro').val(json.bairro || '');
                             $('#cidade').val(json.localidade || '');
                             $('#estado').val(json.uf || '');
+                            
+                            // Mostra os campos extras
                             $('#endereco-extra').slideDown();
+                            $('#forma-entrega-section').slideDown();
+                            
                             $('#numero').focus();
                         }
                     });
                 }
+            });
+            
+            // Corrige o evento dos botoes de frete
+            $('.frete-btn').click(function(e) {
+                $('.frete-btn').removeClass('active');
+                $(this).addClass('active');
+                $('#tipo-frete').val($(this).find('.text-sm.font-bold').text());
             });
         });
 
@@ -345,9 +449,9 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                 bairro: $('#bairro').val() || '',
                 cidade: $('#cidade').val() || '',
                 estado: $('#estado').val() || '',
-                complemento: '',
+                complemento: $('#complemento').val() || '',
                 referencia: '',
-                tipo: 'casa'
+                tipo: $('#tipo-frete').val() || 'padrao'
             };
             
             if(formData.cpf.length !== 11) {
@@ -357,7 +461,6 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
 
             localStorage.setItem('cliente_dados', JSON.stringify(formData));
             
-            // Estado de loading
             $('#btnSubmit')
                 .prop('disabled', true)
                 .addClass('opacity-70')
@@ -380,6 +483,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                 bairro: formData.bairro,
                 cidade: formData.cidade,
                 estado: formData.estado,
+                complemento: formData.complemento,
                 destinatario: formData.nome,
                 quantidade: cartData.quantos || '1',
                 total: cartData.precoFinal || '0,00',
