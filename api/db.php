@@ -7,10 +7,10 @@
 
 // CONFIGURAÇÃO DO BANCO DE DADOS
 class db {
-    public static $db_server = "localhost"; // Na Hostinger, geralmente é "localhost"
-    public static $db_db     = "u977458684_hkkh"; // O nome do banco criado na Hostinger
-    public static $db_user   = "u977458684_hkkh";     // O usuário do banco na Hostinger
-    public static $db_pass   = "84714511@Dj123";      // A senha que você definiu para o banco
+    public static $db_server = "mysql.railway.internal";
+    public static $db_db     = "railway";
+    public static $db_user   = "root";
+    public static $db_pass   = "qwZjbsktlUIGmzImDxOYLGalSRtBqSta";
 }
 
 // Sobrescreve com as variáveis de ambiente (Ex: Railway, Heroku, Docker)
