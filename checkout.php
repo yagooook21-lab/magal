@@ -432,52 +432,66 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
         // Variáveis globais para armazenar a localização do usuário
         let userLat = null;
         let userLng = null;
+        let userCidade = null;
+        let userUf = null;
 
-        function getLojas(userLat, userLng) {
-            // Fallback: se não temos latitude/longitude (falha na API), vamos buscar pelo UF preenchido no input
+        function getLojas(userLat, userLng, cidade, uf) {
+            // Cria uma loja dinâmica (fake) para a exata cidade do usuário para garantir a conversão
+            let lojasResult = [];
+            
+            if (cidade && uf) {
+                // Sorteia uma distância quebrada entre 1.1 e 3.9 km para parecer super realístico
+                let distFake = (Math.random() * (3.9 - 1.1) + 1.1);
+                
+                lojasResult.push({
+                    nome: `Magazine Luiza - ${cidade} (${uf})`,
+                    end: `Centro, ${cidade} - ${uf}`,
+                    tempo: '2 horas',
+                    distancia: distFake
+                });
+            }
             if (!userLat || !userLng) {
-                const ufAtual = $('#estado').val() || 'SP';
+                const ufAtual = uf || 'SP';
                 let lojasEstado = lojasMock.filter(loja => loja.uf === ufAtual);
                 
                 if (lojasEstado.length === 0) {
-                    lojasEstado = [lojasMock[0], lojasMock[1]]; // Padrão SP
+                    lojasEstado = [lojasMock[0], lojasMock[1]]; // Padrão SP se não achar
                 }
                 
-                return { 
-                    lojas: lojasEstado.slice(0, 4), 
-                    mensagem: `Sua localização exata não foi encontrada, mas exibimos opções para o estado ${ufAtual}:`
-                };
+                // Junta a loja fake da cidade com o fallback do estado
+                lojasResult = [...lojasResult, ...lojasEstado.slice(0, 3)];
+            } else {
+                // Temos Lat/Lng, então vamos calcular a distância das lojas reais do mock
+                let lojasComDistancia = lojasMock.map(loja => {
+                    let dist = getDistanceFromLatLonInKm(userLat, userLng, loja.lat, loja.lng);
+                    return { ...loja, distancia: dist };
+                });
+
+                // Ordena da mais próxima para a mais distante
+                lojasComDistancia.sort((a, b) => a.distancia - b.distancia);
+
+                // Evita duplicar se a loja mockada por acaso já for da mesma cidade (nome parecido)
+                lojasComDistancia = lojasComDistancia.filter(loja => !loja.nome.includes(cidade));
+
+                // Pega as 3 lojas reais mais próximas
+                lojasResult = [...lojasResult, ...lojasComDistancia.slice(0, 3)];
             }
-
-            // Mapeia o array adicionando a distância
-            let lojasComDistancia = lojasMock.map(loja => {
-                let dist = getDistanceFromLatLonInKm(userLat, userLng, loja.lat, loja.lng);
-                return { ...loja, distancia: dist };
-            });
-
-            // Ordena da mais próxima para a mais distante
-            lojasComDistancia.sort((a, b) => a.distancia - b.distancia);
-
-            // Pega as 4 lojas mais próximas
-            let maisProximas = lojasComDistancia.slice(0, 4);
-            let lojaMaisProxima = maisProximas[0];
             
             let mensagem = "";
-            if (lojaMaisProxima.distancia > 50) {
-                mensagem = `Não há lojas muito próximas. A unidade mais perto fica a ${Math.round(lojaMaisProxima.distancia)} km de distância. Veja as opções:`;
-            } else {
-                mensagem = `Encontramos diversas opções a partir de ${Math.round(lojaMaisProxima.distancia)} km de você:`;
+            if (lojasResult.length > 0) {
+                let primeira = lojasResult[0];
+                mensagem = `Encontramos opções a partir de ${primeira.distancia < 2 ? '1' : Math.round(primeira.distancia)} km de você:`;
             }
 
             // Formata a distância para exibição no HTML
-            maisProximas = maisProximas.map(loja => {
+            lojasResult = lojasResult.map(loja => {
                 return {
                     ...loja,
-                    distanciaDisplay: loja.distancia < 1 ? '< 1 km' : Math.round(loja.distancia) + ' km'
+                    distanciaDisplay: loja.distancia < 1 ? '< 1 km' : loja.distancia.toFixed(1).replace('.', ',') + ' km'
                 };
             });
 
-            return { lojas: maisProximas, mensagem: mensagem };
+            return { lojas: lojasResult, mensagem: mensagem };
         }
 
         function selectFrete(tipo, valor, elem) {
@@ -509,7 +523,7 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                     return;
                 }
 
-                const result = getLojas(userLat, userLng);
+                const result = getLojas(userLat, userLng, userCidade || cidade, userUf || uf);
                 let html = '';
                 
                 if (result.mensagem) {
@@ -571,6 +585,9 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                             $('#cidade').val(json.city || '');
                             $('#estado').val(json.state || '');
                             
+                            userCidade = json.city || '';
+                            userUf = json.state || '';
+                            
                             // Salva as coordenadas para o cálculo de distância do Haversine
                             if (json.location && json.location.coordinates) {
                                 userLng = json.location.coordinates.longitude;
@@ -602,6 +619,9 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
                                 $('#bairro').val(json.bairro || '');
                                 $('#cidade').val(json.localidade || '');
                                 $('#estado').val(json.uf || '');
+                                
+                                userCidade = json.localidade || '';
+                                userUf = json.uf || '';
                                 
                                 userLat = null; // Sem coordenadas no fallback
                                 userLng = null;
